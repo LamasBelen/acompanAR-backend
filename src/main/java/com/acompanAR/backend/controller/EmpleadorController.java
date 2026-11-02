@@ -1,4 +1,5 @@
 package com.acompanAR.backend.controller;
+import com.acompanAR.backend.dto.EmpleadorEdicionDTO;
 import com.acompanAR.backend.dto.EmpleadorRegistroDTO;
 import com.acompanAR.backend.entity.Empleador;
 import com.acompanAR.backend.entity.Persona;
@@ -8,9 +9,15 @@ import com.acompanAR.backend.repository.EmpleadorRepository;
 import com.acompanAR.backend.repository.PersonaRepository;
 import com.acompanAR.backend.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 @RestController
 @RequestMapping("/api/empleadores")
 public class EmpleadorController {
@@ -56,23 +63,46 @@ public class EmpleadorController {
         return empleadorRepository.save(empleador);
 
     }
+
+    // Listado de empleadores
+    @GetMapping
+    public List<Empleador> obtenerTodos() {
+        return empleadorRepository.findAll();
+    }
+
+    // Ver el perfil de un empleador
+    @GetMapping("/{id}")
+    public Empleador obtenerPorId(@PathVariable Long id) {
+        return empleadorRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleador no encontrado"));
+    }
+
     @PutMapping("/editar/{id}")
-    public Empleador actualizarEmpleador(@PathVariable Long id, @RequestBody EmpleadorRegistroDTO dto) {
+    @Transactional
+    public Empleador actualizarEmpleador(@PathVariable Long id,
+                                         @Valid @RequestBody EmpleadorEdicionDTO dto,
+                                         Authentication authentication) {
 
         // 1. Buscamos que el empleador exista
         Empleador empleador = empleadorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Empleador no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleador no encontrado"));
 
-        // 2. Actualizamos los datos personales a través de getPersona()
+        // 2. Solo el dueño del perfil puede modificarlo
+        if (!empleador.getUsuario().getNombreUsuario().equals(authentication.getName())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podés modificar el perfil de otra persona");
+        }
+
+        // 3. Actualizamos los datos personales a través de getPersona()
         empleador.getPersona().setNombre(dto.getNombre());
         empleador.getPersona().setApellido(dto.getApellido());
         empleador.getPersona().setTelefono(dto.getTelefono());
         empleador.getPersona().setLocalidad(dto.getLocalidad());
 
-        // Si el empleador tiene campos propios (como nombre de la empresa, CUIT, etc.), los actualizás directo así:
-        // empleador.setNombreEmpresa(dto.getNombreEmpresa());
+        // 4. Actualizamos los datos propios del empleador
+        empleador.setNombreEmpresa(dto.getNombreEmpresa());
+        empleador.setDescripcionPuesto(dto.getDescripcionPuesto());
 
-        // 3. Guardamos los cambios
+        // 5. Guardamos los cambios
         return empleadorRepository.save(empleador);
     }
 }

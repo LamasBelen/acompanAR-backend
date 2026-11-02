@@ -1,4 +1,5 @@
 package com.acompanAR.backend.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 @Entity
 @Table(name = "usuarios")
@@ -9,6 +10,7 @@ public class Usuario {
     @Column(name = "nombre_usuario")
     private String nombreUsuario;
 
+    @JsonIgnore // nunca se devuelve la contraseña (ni hasheada) en ninguna respuesta JSON
     private String contrasena; //para que la "ñ" no este en el codigo
 
     @Enumerated (EnumType.STRING)

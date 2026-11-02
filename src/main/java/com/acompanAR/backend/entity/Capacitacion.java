@@ -5,18 +5,24 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "capacitaciones")
-
 public class Capacitacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nombre;
+    private String titulo;
 
     @Column(length = 1000)
     private String descripcion;
+    private String institucion;
     private String linkVideo;
     private int cargaHoraria;
+    private LocalDate fechaInicio;
+
+    // Baja lógica: en vez de borrar la capacitación, se marca como inactiva.
+    // El "default true" permite que Hibernate agregue la columna aunque ya existan filas en la tabla.
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean activa = true;
 
     public Long getId() {
         return id;
@@ -26,12 +32,12 @@ public class Capacitacion {
         this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getTitulo() {
+        return titulo;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
     }
 
     public String getDescripcion() {
@@ -40,6 +46,14 @@ public class Capacitacion {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public String getInstitucion() {
+        return institucion;
+    }
+
+    public void setInstitucion(String institucion) {
+        this.institucion = institucion;
     }
 
     public String getLinkVideo() {
@@ -58,15 +72,19 @@ public class Capacitacion {
         this.cargaHoraria = cargaHoraria;
     }
 
-    public void setTitulo(String titulo) {
+    public LocalDate getFechaInicio() {
+        return fechaInicio;
     }
 
-    public void setInstitucion(String institucion) {
+    public void setFechaInicio(LocalDate fechaInicio) {
+        this.fechaInicio = fechaInicio;
     }
 
-    public void setFechaInicio(LocalDate localDate) {
+    public boolean isActiva() {
+        return activa;
     }
 
-    public void setEstado(boolean b) {
+    public void setActiva(boolean activa) {
+        this.activa = activa;
     }
 }

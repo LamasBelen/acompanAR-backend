@@ -9,8 +9,13 @@ public class Postulacion {
     private Long id;
 
     private LocalDate fechaPostulacion;
-    private boolean estado; //para que diga si esta pendiente, aceptada, o rechazada
-    //la recion con el profesional que se va a postular
+
+    // Se guarda como texto ("PENDIENTE", "ACEPTADA", ...) para que la base de datos sea legible
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Estadopostulacion estado = Estadopostulacion.PENDIENTE;
+
+    //la relacion con el profesional que se va a postular
     @ManyToOne
     @JoinColumn(name = "fk_profesional")
     private  Profesional profesional;
@@ -36,11 +41,11 @@ public class Postulacion {
         this.fechaPostulacion = fechaPostulacion;
     }
 
-    public boolean getEstado() {
+    public Estadopostulacion getEstado() {
         return estado;
     }
 
-    public void setEstado(boolean estado) {
+    public void setEstado(Estadopostulacion estado) {
         this.estado = estado;
     }
 

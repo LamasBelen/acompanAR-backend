@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingresar - acompanAR</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+<header class="barra">
+    <div class="barra-contenido">
+        <a class="logo" href="index.html">acompan<span>AR</span></a>
+        <nav class="menu" id="menu"></nav>
+    </div>
+</header>
+
+<main class="contenedor">
+    <div class="tarjeta tarjeta-angosta">
+        <h1>Ingresar</h1>
+        <p class="subtitulo">Entrá con tu usuario y contraseña.</p>
+
+        <form id="formLogin">
+            <label for="nombreUsuario">Usuario</label>
+            <input type="text" id="nombreUsuario" required autocomplete="username">
+
+            <label for="contrasena">Contraseña</label>
+            <input type="password" id="contrasena" required autocomplete="current-password">
+
+            <button type="submit" class="boton boton-ancho">Ingresar</button>
+            <div id="mensaje" class="mensaje"></div>
+        </form>
+
+        <p class="pie-formulario">¿No tenés cuenta? <a href="registro.html">Registrate</a></p>
+    </div>
+</main>
+
+<script src="js/api.js"></script>
+<script>
+    armarMenu();
+
+    document.getElementById("formLogin").addEventListener("submit", async function (evento) {
+        evento.preventDefault(); // evita que el formulario recargue la página
+
+        const mensaje = document.getElementById("mensaje");
+        const resultado = await pedir("/api/auth/login", "POST", {
+            nombreUsuario: document.getElementById("nombreUsuario").value.trim(),
+            contrasena: document.getElementById("contrasena").value
+        });
+
+        if (resultado.ok) {
+            window.location.href = "inicio.html";
+        } else if (resultado.status === 401) {
+            mostrarMensaje(mensaje, "Usuario o contraseña incorrectos.", "error");
+        } else {
+            mostrarMensaje(mensaje, "No se pudo iniciar sesión. Intentá de nuevo más tarde.", "error");
+        }
+    });
+</script>
+</body>
+</html>

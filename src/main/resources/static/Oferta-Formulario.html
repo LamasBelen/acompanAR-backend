@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oferta laboral - acompanAR</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+<header class="barra">
+    <div class="barra-contenido">
+        <a class="logo" href="index.html">acompan<span>AR</span></a>
+        <nav class="menu" id="menu"></nav>
+    </div>
+</header>
+
+<main class="contenedor">
+    <div class="tarjeta tarjeta-angosta">
+        <h1 id="titulo">Publicar oferta</h1>
+        <p class="subtitulo">Contá qué tipo de profesional necesitás.</p>
+
+        <form id="formOferta">
+            <label for="tituloOferta">Título</label>
+            <input type="text" id="tituloOferta" required maxlength="255" placeholder="Ej: Enfermero/a para turno noche">
+
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" required maxlength="1000" placeholder="Describí las tareas, horarios y condiciones"></textarea>
+
+            <label for="requisitos">Requisitos (opcional)</label>
+            <input type="text" id="requisitos" maxlength="255" placeholder="Ej: matrícula vigente">
+
+            <button type="submit" class="boton boton-ancho" id="botonGuardar">Publicar oferta</button>
+            <div id="mensaje" class="mensaje"></div>
+        </form>
+
+        <p class="pie-formulario"><a href="mis-ofertas.html">Volver a mis ofertas</a></p>
+    </div>
+</main>
+
+<script src="js/api.js"></script>
+<script>
+    armarMenu();
+
+    // Si la dirección trae ?id=5 estamos EDITANDO la oferta 5; si no, estamos publicando una nueva
+    const idOferta = new URLSearchParams(window.location.search).get("id");
+    const mensaje = document.getElementById("mensaje");
+    let usuario = null;
+
+    async function iniciar() {
+        usuario = await requerirSesion();
+        if (usuario === null) return;
+
+        if (usuario.rol !== "EMPLEADOR") {
+            mostrarMensaje(mensaje, "Esta pantalla es para empleadores.", "error");
+            document.getElementById("formOferta").style.display = "none";
+            return;
+        }
+
+        if (idOferta !== null) {
+            document.getElementById("titulo").textContent = "Editar oferta";
+            document.getElementById("botonGuardar").textContent = "Guardar cambios";
+
+            // Cargamos los datos actuales de la oferta en el formulario
+            const resultado = await pedir("/api/ofertas/" + idOferta);
+            if (!resultado.ok) {
+                mostrarMensaje(mensaje, "No se pudo cargar la oferta.", "error");
+                return;
+            }
+            document.getElementById("tituloOferta").value = resultado.datos.titulo;
+            document.getElementById("descripcion").value = resultado.datos.descripcion;
+            document.getElementById("requisitos").value = resultado.datos.requisitos || "";
+        }
+    }
+
+    document.getElementById("formOferta").addEventListener("submit", async function (evento) {
+        evento.preventDefault();
+
+        const datos = {
+            titulo: document.getElementById("tituloOferta").value.trim(),
+            descripcion: document.getElementById("descripcion").value.trim(),
+            requisitos: document.getElementById("requisitos").value.trim()
+        };
+
+        let resultado;
+        if (idOferta !== null) {
+            resultado = await pedir("/api/ofertas/editar/" + idOferta, "PUT", datos);
+        } else {
+            datos.idEmpleador = usuario.idEmpleador; // la oferta queda a nombre del empleador logueado
+            resultado = await pedir("/api/ofertas/publicar", "POST", datos);
+        }
+
+        if (resultado.ok) {
+            window.location.href = "mis-ofertas.html";
+        } else if (resultado.status === 400) {
+            mostrarMensaje(mensaje, "Revisá que el título y la descripción no estén vacíos.", "error");
+        } else if (resultado.status === 403) {
+            mostrarMensaje(mensaje, "No tenés permiso para modificar esta oferta.", "error");
+        } else {
+            mostrarMensaje(mensaje, "No se pudo guardar la oferta. Intentá de nuevo.", "error");
+        }
+    });
+
+    iniciar();
+</script>
+</body>
+</html>

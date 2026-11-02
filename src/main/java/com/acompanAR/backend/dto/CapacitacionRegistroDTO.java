@@ -1,16 +1,24 @@
 package com.acompanAR.backend.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
+import java.time.LocalDate;
 
 public class CapacitacionRegistroDTO {
-    @NotBlank (message = "El nombre de la capacitacion es obligatorio")
+    @NotBlank (message = "El titulo de la capacitacion es obligatorio")
     private String titulo;
     @NotBlank (message = "La descripcion no puede estar vacia")
     private String descripcion;
-    @NotBlank (message = "Poner el nombre de la instucion es obligatorio")
+    @NotBlank (message = "El nombre de la institucion es obligatorio")
     private String institucion;
-    @NotNull(message = "La carga horaria no puede estar vacia ")
-    private Integer CargaHoraria;
+    @NotNull(message = "La carga horaria no puede estar vacia")
+    @Positive(message = "La carga horaria debe ser mayor a 0")
+    private Integer cargaHoraria;
+
+    // Opcionales
+    private String linkVideo;
+    private LocalDate fechaInicio; // formato JSON: "2026-12-01". Si no se manda, se usa hoy + 15 dias
 
     public String getTitulo() {
         return titulo;
@@ -37,10 +45,26 @@ public class CapacitacionRegistroDTO {
     }
 
     public Integer getCargaHoraria() {
-        return CargaHoraria;
+        return cargaHoraria;
     }
 
     public void setCargaHoraria(Integer cargaHoraria) {
-        CargaHoraria = cargaHoraria;
+        this.cargaHoraria = cargaHoraria;
+    }
+
+    public String getLinkVideo() {
+        return linkVideo;
+    }
+
+    public void setLinkVideo(String linkVideo) {
+        this.linkVideo = linkVideo;
+    }
+
+    public LocalDate getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(LocalDate fechaInicio) {
+        this.fechaInicio = fechaInicio;
     }
 }

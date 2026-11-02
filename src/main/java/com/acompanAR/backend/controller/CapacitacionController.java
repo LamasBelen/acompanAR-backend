@@ -14,6 +14,7 @@ import java.util.List;
 public class CapacitacionController {
     @Autowired
     private CapacitacionRepository capacitacionRepository;
+
     @PostMapping("/nueva")
     public Capacitacion crearCapacitacion(@Valid @RequestBody CapacitacionRegistroDTO dto){
         Capacitacion capacitacion = new Capacitacion();
@@ -21,22 +22,44 @@ public class CapacitacionController {
         capacitacion.setDescripcion(dto.getDescripcion());
         capacitacion.setInstitucion(dto.getInstitucion());
         capacitacion.setCargaHoraria(dto.getCargaHoraria());
-        capacitacion.setFechaInicio(LocalDate.now().plusDays(15)); // Le ponemos que empieza en 15 días por defecto
+        capacitacion.setLinkVideo(dto.getLinkVideo());
+        // Si no mandan fecha de inicio, se usa hoy + 15 dias
+        capacitacion.setFechaInicio(dto.getFechaInicio() != null ? dto.getFechaInicio() : LocalDate.now().plusDays(15));
+        capacitacion.setActiva(true);
 
         return capacitacionRepository.save(capacitacion);
     }
 
+    // Solo devuelve las capacitaciones activas (las dadas de baja no se muestran)
     @GetMapping
     public List<Capacitacion> obtenerTodas() {
-        return capacitacionRepository.findAll();
+        return capacitacionRepository.findByActivaTrue();
     }
+
+    // Modificar una capacitacion existente
+    @PutMapping("/editar/{id}")
+    public Capacitacion editarCapacitacion(@PathVariable Long id, @Valid @RequestBody CapacitacionRegistroDTO dto) {
+        Capacitacion capacitacion = capacitacionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Capacitación no encontrada"));
+
+        capacitacion.setTitulo(dto.getTitulo());
+        capacitacion.setDescripcion(dto.getDescripcion());
+        capacitacion.setInstitucion(dto.getInstitucion());
+        capacitacion.setCargaHoraria(dto.getCargaHoraria());
+        capacitacion.setLinkVideo(dto.getLinkVideo());
+        if (dto.getFechaInicio() != null) {
+            capacitacion.setFechaInicio(dto.getFechaInicio());
+        }
+        return capacitacionRepository.save(capacitacion);
+    }
+
+    // Baja lógica: no se borra el registro, solo se marca como inactiva
     @PutMapping("/baja/{id}")
     public Capacitacion darDeBajaCapacitacion(@PathVariable Long id) {
         Capacitacion capacitacion = capacitacionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Capacitación no encontrada"));
 
-        // Usá setEstado(false) o setActiva(false) dependiendo de cómo llamaste a tu variable booleana
-        capacitacion.setEstado(false);
+        capacitacion.setActiva(false);
 
         return capacitacionRepository.save(capacitacion);
     }

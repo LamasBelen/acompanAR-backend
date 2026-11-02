@@ -11,7 +11,9 @@ public class Inscripcion {
     private Long id;
 
     private LocalDate fechaInscripcion;
-    private String estado; // Ej: "En curso", "Finalizada"
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoInscripcionCapacitacion estado = EstadoInscripcionCapacitacion.CONFIRMADA;
 
     // Relación con el Profesional
     @ManyToOne
@@ -38,12 +40,11 @@ public class Inscripcion {
     public void setFechaInscripcion(LocalDate fechaInscripcion) {
         this.fechaInscripcion = fechaInscripcion;
     }
-
-    public String getEstado() {
+    public EstadoInscripcionCapacitacion getEstado() {
         return estado;
     }
 
-    public void setEstado(String estado) {
+    public void setEstado(EstadoInscripcionCapacitacion estado) {
         this.estado = estado;
     }
 
