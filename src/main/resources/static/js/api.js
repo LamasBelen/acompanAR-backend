@@ -69,10 +69,18 @@ async function armarMenu() {
         const enlacesPorRol = {
             PROFESIONAL: [
                 { texto: "Ofertas", url: "ofertas.html" },
-                { texto: "Mis postulaciones", url: "mis-postulaciones.html" }
+                { texto: "Mis postulaciones", url: "mis-postulaciones.html" },
+                { texto: "Capacitaciones", url: "capacitaciones.html" },
+                { texto: "Mis capacitaciones", url: "mis-capacitaciones.html" }
             ],
-            EMPLEADOR: [],
-            ADMINISTRADOR: []
+            EMPLEADOR: [
+                { texto: "Mis ofertas", url: "mis-ofertas.html" },
+                { texto: "Publicar oferta", url: "oferta-form.html" }
+            ],
+            ADMINISTRADOR: [
+                { texto: "Capacitaciones", url: "admin-capacitaciones.html" },
+                { texto: "Nueva capacitación", url: "capacitacion-form.html" }
+            ]
         };
         const enlaces = enlacesPorRol[usuario.rol] || [];
         enlaces.forEach(function (e) {
@@ -99,6 +107,14 @@ function crear(etiqueta, clase, texto, atributos) {
         });
     }
     return elemento;
+}
+
+// Crea un enlace solo si la dirección empieza con http:// o https://.
+// Es una medida de seguridad: evita enlaces tipo "javascript:..." cargados por un usuario malintencionado.
+// Si la dirección no es válida, devuelve null.
+function crearEnlaceSeguro(url, texto) {
+    if (!url || !/^https?:\/\//i.test(url)) return null;
+    return crear("a", "", texto, { href: url, target: "_blank", rel: "noopener noreferrer" });
 }
 
 // Convierte una fecha "2026-10-28" en "28/10/2026"

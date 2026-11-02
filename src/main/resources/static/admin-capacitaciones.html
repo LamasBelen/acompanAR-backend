@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar capacitaciones - acompanAR</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+<header class="barra">
+    <div class="barra-contenido">
+        <a class="logo" href="index.html">acompan<span>AR</span></a>
+        <nav class="menu" id="menu"></nav>
+    </div>
+</header>
+
+<main class="contenedor">
+    <div class="cabecera-pagina item">
+        <div>
+            <h1>Capacitaciones publicadas</h1>
+            <p class="subtitulo">Las capacitaciones que están activas en la plataforma.</p>
+        </div>
+        <a class="boton" href="capacitacion-form.html">Nueva capacitación</a>
+    </div>
+
+    <div id="mensaje" class="mensaje"></div>
+    <div id="lista" class="lista"></div>
+</main>
+
+<script src="js/api.js"></script>
+<script>
+    armarMenu();
+
+    const lista = document.getElementById("lista");
+    const mensaje = document.getElementById("mensaje");
+
+    async function cargar() {
+        const usuario = await requerirSesion();
+        if (usuario === null) return;
+
+        if (usuario.rol !== "ADMINISTRADOR") {
+            mostrarMensaje(mensaje, "Esta pantalla es para administradores.", "error");
+            return;
+        }
+
+        const resultado = await pedir("/api/capacitaciones");
+        if (!resultado.ok) {
+            mostrarMensaje(mensaje, "No se pudieron cargar las capacitaciones.", "error");
+            return;
+        }
+
+        lista.innerHTML = "";
+        if (resultado.datos.length === 0) {
+            lista.appendChild(crear("p", "vacio", "Todavía no hay capacitaciones publicadas."));
+            return;
+        }
+        resultado.datos.forEach(function (cap) {
+            lista.appendChild(armarTarjeta(cap));
+        });
+    }
+
+    function armarTarjeta(cap) {
+        const tarjeta = crear("div", "tarjeta item");
+
+        const info = crear("div");
+        info.appendChild(crear("h2", "", cap.titulo));
+        info.appendChild(crear("p", "detalle",
+            cap.institucion + " · " + cap.cargaHoraria + " hs · Comienza el " + formatearFecha(cap.fechaInicio)));
+        info.appendChild(crear("p", "", cap.descripcion));
+
+        const acciones = crear("div", "acciones");
+        acciones.appendChild(crear("a", "boton boton-chico boton-secundario", "Editar", { href: "capacitacion-form.html?id=" + cap.id }));
+        const baja = crear("button", "boton boton-chico boton-peligro", "Dar de baja");
+        baja.addEventListener("click", function () { darDeBaja(cap.id); });
+        acciones.appendChild(baja);
+
+        tarjeta.appendChild(info);
+        tarjeta.appendChild(acciones);
+        return tarjeta;
+    }
+
+    async function darDeBaja(idCapacitacion) {
+        if (!confirm("¿Querés dar de baja esta capacitación? Ya no la van a ver los profesionales.")) return;
+
+        const resultado = await pedir("/api/capacitaciones/baja/" + idCapacitacion, "PUT");
+        if (resultado.ok) {
+            cargar();
+        } else {
+            mostrarMensaje(mensaje, "No se pudo dar de baja la capacitación.", "error");
+        }
+    }
+
+    cargar();
+</script>
+</body>
+</html>

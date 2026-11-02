@@ -326,3 +326,6 @@ textarea {
 .cabecera-pagina {
     margin-bottom: 20px;
 }
+
+.estado-CONFIRMADA { color: #8a5a00; background: #fff3d6; }
+.estado-FINALIZADA { color: var(--verde-oscuro); background: var(--ok-fondo); }
