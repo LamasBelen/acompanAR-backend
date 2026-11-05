@@ -7,184 +7,184 @@
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-<header class="barra">
-    <div class="barra-contenido">
-        <a class="logo" href="index.html">acompan<span>AR</span></a>
-        <nav class="menu" id="menu"></nav>
-    </div>
-</header>
+    <header class="barra">
+        <div class="barra-contenido">
+            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <nav class="menu" id="menu"></nav>
+        </div>
+    </header>
 
-<main class="contenedor">
-    <div class="tarjeta tarjeta-angosta">
-        <h1>Mi perfil</h1>
-        <p class="subtitulo">Mantené tus datos actualizados.</p>
+    <main class="contenedor">
+        <div class="tarjeta tarjeta-angosta">
+            <h1>Mi perfil</h1>
+            <p class="subtitulo">Mantené tus datos actualizados.</p>
 
-        <form id="formPerfil">
-            <div class="fila">
-                <div>
-                    <label for="nombre">Nombre</label>
-                    <input type="text" id="nombre" required maxlength="100">
+            <form id="formPerfil">
+                <div class="fila">
+                    <div>
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre" required maxlength="100">
+                    </div>
+                    <div>
+                        <label for="apellido">Apellido</label>
+                        <input type="text" id="apellido" required maxlength="100">
+                    </div>
                 </div>
-                <div>
-                    <label for="apellido">Apellido</label>
-                    <input type="text" id="apellido" required maxlength="100">
-                </div>
-            </div>
-
-            <div class="fila">
-                <div>
-                    <label for="telefono">Teléfono</label>
-                    <input type="tel" id="telefono" required maxlength="30">
-                </div>
-                <div>
-                    <label for="localidad">Localidad</label>
-                    <input type="text" id="localidad" required maxlength="100">
-                </div>
-            </div>
-
-            <!-- Campos que solo ve un profesional -->
-            <div id="camposProfesional" style="display: none;">
-                <label for="tipoProfesional">Profesión</label>
-                <select id="tipoProfesional">
-                    <option value="Enfermero/a">Enfermero/a</option>
-                    <option value="Acompañante terapéutico">Acompañante terapéutico</option>
-                </select>
 
                 <div class="fila">
                     <div>
-                        <label for="matricula">Matrícula</label>
-                        <input type="text" id="matricula" maxlength="255">
+                        <label for="telefono">Teléfono</label>
+                        <input type="tel" id="telefono" required maxlength="30">
                     </div>
                     <div>
-                        <label for="disponibilidad">Disponibilidad</label>
-                        <input type="text" id="disponibilidad" maxlength="255">
+                        <label for="localidad">Localidad</label>
+                        <input type="text" id="localidad" required maxlength="100">
                     </div>
                 </div>
 
-                <label for="experiencia">Experiencia</label>
-                <textarea id="experiencia" maxlength="1500"></textarea>
-            </div>
+                <!-- Campos que solo ve un profesional -->
+                <div id="camposProfesional" style="display: none;">
+                    <label for="tipoProfesional">Profesión</label>
+                    <select id="tipoProfesional">
+                        <option value="Enfermero/a">Enfermero/a</option>
+                        <option value="Acompañante terapéutico">Acompañante terapéutico</option>
+                    </select>
 
-            <!-- Campos que solo ve un empleador -->
-            <div id="camposEmpleador" style="display: none;">
-                <label for="nombreEmpresa">Nombre de la empresa o institución</label>
-                <input type="text" id="nombreEmpresa" maxlength="255">
+                    <div class="fila">
+                        <div>
+                            <label for="matricula">Matrícula</label>
+                            <input type="text" id="matricula" maxlength="255">
+                        </div>
+                        <div>
+                            <label for="disponibilidad">Disponibilidad</label>
+                            <input type="text" id="disponibilidad" maxlength="255">
+                        </div>
+                    </div>
 
-                <label for="descripcionPuesto">¿Qué tipo de personal necesitás?</label>
-                <textarea id="descripcionPuesto" maxlength="255"></textarea>
-            </div>
+                    <label for="experiencia">Experiencia</label>
+                    <textarea id="experiencia" maxlength="1500"></textarea>
+                </div>
 
-            <button type="submit" class="boton boton-ancho">Guardar cambios</button>
-            <div id="mensaje" class="mensaje"></div>
-        </form>
-    </div>
+                <!-- Campos que solo ve un empleador -->
+                <div id="camposEmpleador" style="display: none;">
+                    <label for="nombreEmpresa">Nombre de la empresa o institución</label>
+                    <input type="text" id="nombreEmpresa" maxlength="255">
 
-    <div class="tarjeta tarjeta-angosta" style="margin-top: 20px;">
-        <h2>Dar de baja mi cuenta</h2>
-        <p class="subtitulo">
-            Tu cuenta quedará inactiva y no vas a poder ingresar. Tus postulaciones o
-            publicaciones pendientes también se cancelarán.
-        </p>
-        <button type="button" class="boton boton-peligro" id="botonBaja">Darme de baja</button>
-    </div>
-</main>
+                    <label for="descripcionPuesto">¿Qué tipo de personal necesitás?</label>
+                    <textarea id="descripcionPuesto" maxlength="255"></textarea>
+                </div>
 
-<script src="js/api.js"></script>
-<script>
-    armarMenu();
+                <button type="submit" class="boton boton-ancho">Guardar cambios</button>
+                <div id="mensaje" class="mensaje"></div>
+            </form>
+        </div>
 
-    const mensaje = document.getElementById("mensaje");
-    let usuario = null;
-    let esProfesional = false;
+        <div class="tarjeta tarjeta-angosta" style="margin-top: 20px;">
+            <h2>Dar de baja mi cuenta</h2>
+            <p class="subtitulo">
+                Tu cuenta quedará inactiva y no vas a poder ingresar. Tus postulaciones o
+                publicaciones pendientes también se cancelarán.
+            </p>
+            <button type="button" class="boton boton-peligro" id="botonBaja">Darme de baja</button>
+        </div>
+    </main>
 
-    async function cargar() {
-        usuario = await requerirSesion();
-        if (usuario === null) return;
+    <script src="js/api.js"></script>
+    <script>
+        armarMenu();
 
-        esProfesional = usuario.rol === "PROFESIONAL";
-        if (!esProfesional && usuario.rol !== "EMPLEADOR") {
-            mostrarMensaje(mensaje, "Esta pantalla es para profesionales y empleadores.", "error");
-            document.getElementById("formPerfil").style.display = "none";
-            document.getElementById("botonBaja").style.display = "none";
-            return;
+        const mensaje = document.getElementById("mensaje");
+        let usuario = null;
+        let esProfesional = false;
+
+        async function cargar() {
+            usuario = await requerirSesion();
+            if (usuario === null) return;
+
+            esProfesional = usuario.rol === "PROFESIONAL";
+            if (!esProfesional && usuario.rol !== "EMPLEADOR") {
+                mostrarMensaje(mensaje, "Esta pantalla es para profesionales y empleadores.", "error");
+                document.getElementById("formPerfil").style.display = "none";
+                document.getElementById("botonBaja").style.display = "none";
+                return;
+            }
+
+            document.getElementById(esProfesional ? "camposProfesional" : "camposEmpleador").style.display = "block";
+
+            const url = esProfesional
+                ? "/api/profesionales/" + usuario.idProfesional
+                : "/api/empleadores/" + usuario.idEmpleador;
+            const resultado = await pedir(url);
+            if (!resultado.ok) {
+                mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo cargar tu perfil."), "error");
+                return;
+            }
+
+            const perfil = resultado.datos;
+            document.getElementById("nombre").value = perfil.persona.nombre;
+            document.getElementById("apellido").value = perfil.persona.apellido;
+            document.getElementById("telefono").value = perfil.persona.telefono;
+            document.getElementById("localidad").value = perfil.persona.localidad;
+
+            if (esProfesional) {
+                document.getElementById("tipoProfesional").value = perfil.tipoProfesional;
+                document.getElementById("matricula").value = perfil.matricula || "";
+                document.getElementById("disponibilidad").value = perfil.disponibilidad || "";
+                document.getElementById("experiencia").value = perfil.experiencia || "";
+            } else {
+                document.getElementById("nombreEmpresa").value = perfil.nombreEmpresa || "";
+                document.getElementById("descripcionPuesto").value = perfil.descripcionPuesto || "";
+            }
         }
 
-        document.getElementById(esProfesional ? "camposProfesional" : "camposEmpleador").style.display = "block";
+        document.getElementById("formPerfil").addEventListener("submit", async function (evento) {
+            evento.preventDefault();
 
-        const url = esProfesional
-            ? "/api/profesionales/" + usuario.idProfesional
-            : "/api/empleadores/" + usuario.idEmpleador;
-        const resultado = await pedir(url);
-        if (!resultado.ok) {
-            mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo cargar tu perfil."), "error");
-            return;
-        }
+            const datos = {
+                nombre: document.getElementById("nombre").value.trim(),
+                apellido: document.getElementById("apellido").value.trim(),
+                telefono: document.getElementById("telefono").value.trim(),
+                localidad: document.getElementById("localidad").value.trim()
+            };
 
-        const perfil = resultado.datos;
-        document.getElementById("nombre").value = perfil.persona.nombre;
-        document.getElementById("apellido").value = perfil.persona.apellido;
-        document.getElementById("telefono").value = perfil.persona.telefono;
-        document.getElementById("localidad").value = perfil.persona.localidad;
+            let url;
+            if (esProfesional) {
+                url = "/api/profesionales/editar/" + usuario.idProfesional;
+                datos.tipoProfesional = document.getElementById("tipoProfesional").value;
+                datos.matricula = document.getElementById("matricula").value.trim();
+                datos.disponibilidad = document.getElementById("disponibilidad").value.trim();
+                datos.experiencia = document.getElementById("experiencia").value.trim();
+            } else {
+                url = "/api/empleadores/editar/" + usuario.idEmpleador;
+                datos.nombreEmpresa = document.getElementById("nombreEmpresa").value.trim();
+                datos.descripcionPuesto = document.getElementById("descripcionPuesto").value.trim();
+            }
 
-        if (esProfesional) {
-            document.getElementById("tipoProfesional").value = perfil.tipoProfesional;
-            document.getElementById("matricula").value = perfil.matricula || "";
-            document.getElementById("disponibilidad").value = perfil.disponibilidad || "";
-            document.getElementById("experiencia").value = perfil.experiencia || "";
-        } else {
-            document.getElementById("nombreEmpresa").value = perfil.nombreEmpresa || "";
-            document.getElementById("descripcionPuesto").value = perfil.descripcionPuesto || "";
-        }
-    }
+            const resultado = await pedir(url, "PUT", datos);
+            if (resultado.ok) {
+                mostrarMensaje(mensaje, "Perfil actualizado.", "ok");
+            } else {
+                mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo guardar el perfil."), "error");
+            }
+        });
 
-    document.getElementById("formPerfil").addEventListener("submit", async function (evento) {
-        evento.preventDefault();
+        document.getElementById("botonBaja").addEventListener("click", async function () {
+            if (!confirm("¿Seguro que querés dar de baja tu cuenta? No vas a poder volver a ingresar.")) return;
 
-        const datos = {
-            nombre: document.getElementById("nombre").value.trim(),
-            apellido: document.getElementById("apellido").value.trim(),
-            telefono: document.getElementById("telefono").value.trim(),
-            localidad: document.getElementById("localidad").value.trim()
-        };
+            const url = esProfesional
+                ? "/api/profesionales/baja/" + usuario.idProfesional
+                : "/api/empleadores/baja/" + usuario.idEmpleador;
+            const resultado = await pedir(url, "PUT");
 
-        let url;
-        if (esProfesional) {
-            url = "/api/profesionales/editar/" + usuario.idProfesional;
-            datos.tipoProfesional = document.getElementById("tipoProfesional").value;
-            datos.matricula = document.getElementById("matricula").value.trim();
-            datos.disponibilidad = document.getElementById("disponibilidad").value.trim();
-            datos.experiencia = document.getElementById("experiencia").value.trim();
-        } else {
-            url = "/api/empleadores/editar/" + usuario.idEmpleador;
-            datos.nombreEmpresa = document.getElementById("nombreEmpresa").value.trim();
-            datos.descripcionPuesto = document.getElementById("descripcionPuesto").value.trim();
-        }
+            if (resultado.ok) {
+                // El servidor ya cerró la sesión: volvemos a la portada
+                window.location.href = "index.html";
+            } else {
+                mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo dar de baja la cuenta."), "error");
+            }
+        });
 
-        const resultado = await pedir(url, "PUT", datos);
-        if (resultado.ok) {
-            mostrarMensaje(mensaje, "Perfil actualizado.", "ok");
-        } else {
-            mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo guardar el perfil."), "error");
-        }
-    });
-
-    document.getElementById("botonBaja").addEventListener("click", async function () {
-        if (!confirm("¿Seguro que querés dar de baja tu cuenta? No vas a poder volver a ingresar.")) return;
-
-        const url = esProfesional
-            ? "/api/profesionales/baja/" + usuario.idProfesional
-            : "/api/empleadores/baja/" + usuario.idEmpleador;
-        const resultado = await pedir(url, "PUT");
-
-        if (resultado.ok) {
-            // El servidor ya cerró la sesión: volvemos a la portada
-            window.location.href = "index.html";
-        } else {
-            mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo dar de baja la cuenta."), "error");
-        }
-    });
-
-    cargar();
-</script>
+        cargar();
+    </script>
 </body>
 </html>

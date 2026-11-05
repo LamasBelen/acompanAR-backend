@@ -4,7 +4,7 @@ package com.acompanAR.backend.controller;
 import com.acompanAR.backend.dto.ProfesionalEdicionDTO;
 import com.acompanAR.backend.dto.ProfesionalRegistroDTO;
 import com.acompanAR.backend.entity.EstadoInscripcionCapacitacion;
-import com.acompanAR.backend.entity.Estadopostulacion;
+import com.acompanAR.backend.entity.EstadoPostulacion;
 import com.acompanAR.backend.entity.Inscripcion;
 import com.acompanAR.backend.entity.Persona;
 import com.acompanAR.backend.entity.Postulacion;
@@ -116,8 +116,8 @@ public class ProfesionalController {
 
         // 2. Se cancelan sus postulaciones pendientes y sus inscripciones vigentes
         for (Postulacion postulacion : postulacionRepository.findByProfesionalId(id)) {
-            if (postulacion.getEstado() == Estadopostulacion.PENDIENTE) {
-                postulacion.setEstado(Estadopostulacion.CANCELADA);
+            if (postulacion.getEstado() == EstadoPostulacion.PENDIENTE) {
+                postulacion.setEstado(EstadoPostulacion.CANCELADA);
                 postulacionRepository.save(postulacion);
             }
         }
@@ -176,4 +176,4 @@ public class ProfesionalController {
         // 5. Guardamos los cambios
         return profesionalRepository.save(profesional);
     }
-}
+}

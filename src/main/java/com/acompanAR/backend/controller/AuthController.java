@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -73,7 +74,7 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> usuarioActual(Authentication authentication) {
         Usuario usuario = usuarioRepository.findByNombreUsuario(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario no encontrado"));
         return ResponseEntity.ok(armarRespuesta(usuario));
     }
 

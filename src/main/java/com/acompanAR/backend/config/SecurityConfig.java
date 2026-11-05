@@ -47,7 +47,7 @@ public class SecurityConfig {
                         // ---- Páginas del front (carpeta static): se pueden abrir sin login.
                         // Cada página protegida pide la sesión con JavaScript, y los DATOS
                         // siguen protegidos porque la API (/api/**) sí exige login. ----
-                        .requestMatchers("/", "/*.html", "/css/**", "/js/**", "/img/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/", "/*.html", "/css/**", "/js/**", "/img/**", "/favicon.ico", "/error").permitAll()
 
                         // ---- Rutas públicas de la API (sin login) ----
                         .requestMatchers("/api/auth/login").permitAll()

@@ -7,48 +7,59 @@
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-<header class="barra">
-    <div class="barra-contenido">
-        <a class="logo" href="index.html">acompan<span>AR</span></a>
-        <nav class="menu" id="menu"></nav>
-    </div>
-</header>
+    <header class="barra">
+        <div class="barra-contenido">
+            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <nav class="menu" id="menu"></nav>
+        </div>
+    </header>
 
-<main class="contenedor">
-    <div class="tarjeta">
-        <h1 id="saludo">Cargando...</h1>
-        <p><span class="etiqueta-rol" id="rol"></span></p>
-        <p class="subtitulo" id="descripcion"></p>
-        <div class="botones" id="accesos" style="justify-content: flex-start;"></div>
-    </div>
-</main>
+    <main class="contenedor">
+        <div class="tarjeta">
+            <h1 id="saludo">Cargando...</h1>
+            <p><span class="etiqueta-rol" id="rol"></span></p>
+            <p class="subtitulo" id="descripcion"></p>
+            <div class="botones" id="accesos" style="justify-content: flex-start;"></div>
+        </div>
+    </main>
 
-<script src="js/api.js"></script>
-<script>
-    armarMenu();
+    <script src="js/api.js"></script>
+    <script>
+        armarMenu();
 
-    // Esta página exige sesión: si no hay, requerirSesion() manda al login
-    requerirSesion().then(function (usuario) {
-        if (usuario === null) return;
+        // Esta página exige sesión: si no hay, requerirSesion() manda al login
+        requerirSesion().then(function (usuario) {
+            if (usuario === null) return;
 
-        const nombre = usuario.nombre ? usuario.nombre : usuario.nombreUsuario;
-        document.getElementById("saludo").textContent = "Hola, " + nombre;
-        document.getElementById("rol").textContent = usuario.rol;
+            const nombre = usuario.nombre ? usuario.nombre : usuario.nombreUsuario;
+            document.getElementById("saludo").textContent = "Hola, " + nombre;
+            document.getElementById("rol").textContent = usuario.rol;
 
-        const textos = {
-            PROFESIONAL: "Acá vas a poder ver ofertas laborales, postularte y inscribirte a capacitaciones.",
-            EMPLEADOR: "Acá vas a poder publicar ofertas laborales y responder a las postulaciones.",
-            ADMINISTRADOR: "Acá vas a poder publicar y administrar capacitaciones."
-        };
-        document.getElementById("descripcion").textContent = textos[usuario.rol] || "";
+            const textos = {
+                PROFESIONAL: "Acá vas a poder ver ofertas laborales, postularte y inscribirte a capacitaciones.",
+                EMPLEADOR: "Acá vas a poder publicar ofertas laborales y responder a las postulaciones.",
+                ADMINISTRADOR: "Acá vas a poder publicar y administrar capacitaciones."
+            };
+            document.getElementById("descripcion").textContent = textos[usuario.rol] || "";
 
-        // Botones de acceso rápido según el rol
-        if (usuario.rol === "PROFESIONAL") {
-            const accesos = document.getElementById("accesos");
-            accesos.appendChild(crear("a", "boton", "Ver ofertas", { href: "ofertas.html" }));
-            accesos.appendChild(crear("a", "boton boton-secundario", "Mis postulaciones", { href: "mis-postulaciones.html" }));
-        }
-    });
-</script>
+            // Botones de acceso rápido según el rol
+            if (usuario.rol === "EMPLEADOR") {
+                const accesos = document.getElementById("accesos");
+                accesos.appendChild(crear("a", "boton", "Publicar oferta", { href: "oferta-form.html" }));
+                accesos.appendChild(crear("a", "boton boton-secundario", "Mis ofertas", { href: "mis-ofertas.html" }));
+            }
+            if (usuario.rol === "PROFESIONAL") {
+                const accesos = document.getElementById("accesos");
+                accesos.appendChild(crear("a", "boton", "Ver ofertas", { href: "ofertas.html" }));
+                accesos.appendChild(crear("a", "boton boton-secundario", "Mis postulaciones", { href: "mis-postulaciones.html" }));
+                accesos.appendChild(crear("a", "boton boton-secundario", "Capacitaciones", { href: "capacitaciones.html" }));
+            }
+            if (usuario.rol === "ADMINISTRADOR") {
+                const accesos = document.getElementById("accesos");
+                accesos.appendChild(crear("a", "boton", "Nueva capacitación", { href: "capacitacion-form.html" }));
+                accesos.appendChild(crear("a", "boton boton-secundario", "Administrar capacitaciones", { href: "admin-capacitaciones.html" }));
+            }
+        });
+    </script>
 </body>
 </html>

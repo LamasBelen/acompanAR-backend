@@ -1,6 +1,6 @@
 package com.acompanAR.backend.controller;
 import com.acompanAR.backend.dto.PostulacionRegistroDTO;
-import com.acompanAR.backend.entity.Estadopostulacion;
+import com.acompanAR.backend.entity.EstadoPostulacion;
 import com.acompanAR.backend.entity.OfertaLaboral;
 import com.acompanAR.backend.entity.Postulacion;
 import com.acompanAR.backend.entity.Profesional;
@@ -54,7 +54,7 @@ public class PostulacionesController {
         postulacion.setProfesional(profesional);
         postulacion.setOfertaLaboral(oferta);
         postulacion.setFechaPostulacion(LocalDate.now());
-        postulacion.setEstado(Estadopostulacion.PENDIENTE); // toda postulación nueva arranca pendiente
+        postulacion.setEstado(EstadoPostulacion.PENDIENTE); // toda postulación nueva arranca pendiente
         return postulacionRepository.save(postulacion);
     }
 
@@ -86,7 +86,7 @@ public class PostulacionesController {
     public Postulacion aceptar(@PathVariable Long id, Authentication authentication) {
         Postulacion postulacion = buscarPostulacion(id);
         verificarEmpleador(postulacion.getOfertaLaboral(), authentication);
-        return cambiarEstado(postulacion, Estadopostulacion.ACEPTADA);
+        return cambiarEstado(postulacion, EstadoPostulacion.ACEPTADA);
     }
 
     // El empleador rechaza la postulación
@@ -94,7 +94,7 @@ public class PostulacionesController {
     public Postulacion rechazar(@PathVariable Long id, Authentication authentication) {
         Postulacion postulacion = buscarPostulacion(id);
         verificarEmpleador(postulacion.getOfertaLaboral(), authentication);
-        return cambiarEstado(postulacion, Estadopostulacion.RECHAZADA);
+        return cambiarEstado(postulacion, EstadoPostulacion.RECHAZADA);
     }
 
     // El profesional cancela su postulación (baja lógica: el registro queda, con estado CANCELADA)
@@ -102,13 +102,13 @@ public class PostulacionesController {
     public Postulacion cancelar(@PathVariable Long id, Authentication authentication) {
         Postulacion postulacion = buscarPostulacion(id);
         verificarProfesional(postulacion.getProfesional(), authentication);
-        return cambiarEstado(postulacion, Estadopostulacion.CANCELADA);
+        return cambiarEstado(postulacion, EstadoPostulacion.CANCELADA);
     }
 
     // Regla de negocio: solo una postulación PENDIENTE puede pasar a otro estado.
     // Una vez aceptada, rechazada o cancelada, queda cerrada.
-    private Postulacion cambiarEstado(Postulacion postulacion, Estadopostulacion nuevoEstado) {
-        if (postulacion.getEstado() != Estadopostulacion.PENDIENTE) {
+    private Postulacion cambiarEstado(Postulacion postulacion, EstadoPostulacion nuevoEstado) {
+        if (postulacion.getEstado() != EstadoPostulacion.PENDIENTE) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Solo se puede modificar una postulación pendiente. Estado actual: " + postulacion.getEstado());
         }

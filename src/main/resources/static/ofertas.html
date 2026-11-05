@@ -7,109 +7,109 @@
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-<header class="barra">
-    <div class="barra-contenido">
-        <a class="logo" href="index.html">acompan<span>AR</span></a>
-        <nav class="menu" id="menu"></nav>
-    </div>
-</header>
+    <header class="barra">
+        <div class="barra-contenido">
+            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <nav class="menu" id="menu"></nav>
+        </div>
+    </header>
 
-<main class="contenedor">
-    <div class="cabecera-pagina">
-        <h1>Ofertas laborales</h1>
-        <p class="subtitulo">Postulate a las ofertas que te interesen.</p>
-    </div>
+    <main class="contenedor">
+        <div class="cabecera-pagina">
+            <h1>Ofertas laborales</h1>
+            <p class="subtitulo">Postulate a las ofertas que te interesen.</p>
+        </div>
 
-    <div id="mensaje" class="mensaje"></div>
-    <div id="lista" class="lista"></div>
-</main>
+        <div id="mensaje" class="mensaje"></div>
+        <div id="lista" class="lista"></div>
+    </main>
 
-<script src="js/api.js"></script>
-<script>
-    armarMenu();
+    <script src="js/api.js"></script>
+    <script>
+        armarMenu();
 
-    const lista = document.getElementById("lista");
-    const mensaje = document.getElementById("mensaje");
-    let usuario = null;
+        const lista = document.getElementById("lista");
+        const mensaje = document.getElementById("mensaje");
+        let usuario = null;
 
-    async function cargar() {
-        usuario = await requerirSesion();
-        if (usuario === null) return;
+        async function cargar() {
+            usuario = await requerirSesion();
+            if (usuario === null) return;
 
-        // Solo los profesionales se postulan
-        if (usuario.rol !== "PROFESIONAL") {
-            mostrarMensaje(mensaje, "Esta pantalla es para profesionales.", "error");
-            return;
-        }
+            // Solo los profesionales se postulan
+            if (usuario.rol !== "PROFESIONAL") {
+                mostrarMensaje(mensaje, "Esta pantalla es para profesionales.", "error");
+                return;
+            }
 
-        const ofertas = await pedir("/api/ofertas");
-        const misPostulaciones = await pedir("/api/postulaciones/profesional/" + usuario.idProfesional);
+            const ofertas = await pedir("/api/ofertas");
+            const misPostulaciones = await pedir("/api/postulaciones/profesional/" + usuario.idProfesional);
 
-        if (!ofertas.ok) {
-            mostrarMensaje(mensaje, "No se pudieron cargar las ofertas.", "error");
-            return;
-        }
+            if (!ofertas.ok) {
+                mostrarMensaje(mensaje, "No se pudieron cargar las ofertas.", "error");
+                return;
+            }
 
-        // Ids de las ofertas a las que ya me postulé (y la postulación sigue vigente)
-        const yaPostulado = new Set();
-        if (misPostulaciones.ok) {
-            misPostulaciones.datos.forEach(function (p) {
-                if (p.estado !== "CANCELADA") {
-                    yaPostulado.add(p.ofertaLaboral.id);
-                }
+            // Ids de las ofertas a las que ya me postulé (y la postulación sigue vigente)
+            const yaPostulado = new Set();
+            if (misPostulaciones.ok) {
+                misPostulaciones.datos.forEach(function (p) {
+                    if (p.estado !== "CANCELADA") {
+                        yaPostulado.add(p.ofertaLaboral.id);
+                    }
+                });
+            }
+
+            lista.innerHTML = "";
+            if (ofertas.datos.length === 0) {
+                lista.appendChild(crear("p", "vacio", "Por ahora no hay ofertas publicadas."));
+                return;
+            }
+            ofertas.datos.forEach(function (oferta) {
+                lista.appendChild(armarTarjeta(oferta, yaPostulado.has(oferta.id)));
             });
         }
 
-        lista.innerHTML = "";
-        if (ofertas.datos.length === 0) {
-            lista.appendChild(crear("p", "vacio", "Por ahora no hay ofertas publicadas."));
-            return;
+        function armarTarjeta(oferta, postulado) {
+            const tarjeta = crear("div", "tarjeta item");
+
+            const info = crear("div");
+            info.appendChild(crear("h2", "", oferta.titulo));
+            const empresa = oferta.empleador ? oferta.empleador.nombreEmpresa : "";
+            info.appendChild(crear("p", "detalle", empresa + " · Publicada el " + formatearFecha(oferta.fechaPublicacion)));
+            info.appendChild(crear("p", "", oferta.descripcion));
+            if (oferta.requisitos) {
+                info.appendChild(crear("p", "detalle", "Requisitos: " + oferta.requisitos));
+            }
+
+            const acciones = crear("div", "acciones");
+            const boton = crear("button", "boton boton-chico", postulado ? "Ya te postulaste" : "Postularme");
+            boton.disabled = postulado;
+            boton.addEventListener("click", function () { postularse(oferta.id, boton); });
+            acciones.appendChild(boton);
+
+            tarjeta.appendChild(info);
+            tarjeta.appendChild(acciones);
+            return tarjeta;
         }
-        ofertas.datos.forEach(function (oferta) {
-            lista.appendChild(armarTarjeta(oferta, yaPostulado.has(oferta.id)));
-        });
-    }
 
-    function armarTarjeta(oferta, postulado) {
-        const tarjeta = crear("div", "tarjeta item");
+        async function postularse(idOferta, boton) {
+            boton.disabled = true;
+            const resultado = await pedir("/api/postulaciones/nueva", "POST", {
+                idProfesional: usuario.idProfesional,
+                idOfertaLaboral: idOferta
+            });
 
-        const info = crear("div");
-        info.appendChild(crear("h2", "", oferta.titulo));
-        const empresa = oferta.empleador ? oferta.empleador.nombreEmpresa : "";
-        info.appendChild(crear("p", "detalle", empresa + " · Publicada el " + formatearFecha(oferta.fechaPublicacion)));
-        info.appendChild(crear("p", "", oferta.descripcion));
-        if (oferta.requisitos) {
-            info.appendChild(crear("p", "detalle", "Requisitos: " + oferta.requisitos));
+            if (resultado.ok) {
+                boton.textContent = "Ya te postulaste";
+                mostrarMensaje(mensaje, "¡Postulación enviada! Podés seguirla en \"Mis postulaciones\".", "ok");
+            } else {
+                boton.disabled = false;
+                mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo enviar la postulación."), "error");
+            }
         }
 
-        const acciones = crear("div", "acciones");
-        const boton = crear("button", "boton boton-chico", postulado ? "Ya te postulaste" : "Postularme");
-        boton.disabled = postulado;
-        boton.addEventListener("click", function () { postularse(oferta.id, boton); });
-        acciones.appendChild(boton);
-
-        tarjeta.appendChild(info);
-        tarjeta.appendChild(acciones);
-        return tarjeta;
-    }
-
-    async function postularse(idOferta, boton) {
-        boton.disabled = true;
-        const resultado = await pedir("/api/postulaciones/nueva", "POST", {
-            idProfesional: usuario.idProfesional,
-            idOfertaLaboral: idOferta
-        });
-
-        if (resultado.ok) {
-            boton.textContent = "Ya te postulaste";
-            mostrarMensaje(mensaje, "¡Postulación enviada! Podés seguirla en \"Mis postulaciones\".", "ok");
-        } else {
-            boton.disabled = false;
-            mostrarMensaje(mensaje, "No se pudo enviar la postulación.", "error");
-        }
-    }
-
-    cargar();
-</script>
+        cargar();
+    </script>
 </body>
 </html>

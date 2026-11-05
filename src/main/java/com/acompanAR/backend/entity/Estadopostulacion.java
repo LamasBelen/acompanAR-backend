@@ -8,7 +8,7 @@ package com.acompanAR.backend.entity;
  * RECHAZADA  -> el empleador rechazó la postulación
  * CANCELADA  -> el profesional retiró su postulación (baja lógica: el registro no se borra)
  */
-public enum Estadopostulacion {
+public enum EstadoPostulacion {
     PENDIENTE,
     ACEPTADA,
     RECHAZADA,

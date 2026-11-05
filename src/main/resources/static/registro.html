@@ -7,150 +7,150 @@
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-<header class="barra">
-    <div class="barra-contenido">
-        <a class="logo" href="index.html">acompan<span>AR</span></a>
-        <nav class="menu" id="menu"></nav>
-    </div>
-</header>
+    <header class="barra">
+        <div class="barra-contenido">
+            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <nav class="menu" id="menu"></nav>
+        </div>
+    </header>
 
-<main class="contenedor">
-    <div class="tarjeta tarjeta-angosta">
-        <h1>Crear cuenta</h1>
-        <p class="subtitulo">Elegí cómo vas a usar la plataforma.</p>
+    <main class="contenedor">
+        <div class="tarjeta tarjeta-angosta">
+            <h1>Crear cuenta</h1>
+            <p class="subtitulo">Elegí cómo vas a usar la plataforma.</p>
 
-        <form id="formRegistro">
-            <label for="tipoCuenta">Quiero registrarme como</label>
-            <select id="tipoCuenta">
-                <option value="profesional">Profesional (busco trabajo)</option>
-                <option value="empleador">Empleador (busco profesionales)</option>
-            </select>
-
-            <div class="fila">
-                <div>
-                    <label for="nombre">Nombre</label>
-                    <input type="text" id="nombre" required>
-                </div>
-                <div>
-                    <label for="apellido">Apellido</label>
-                    <input type="text" id="apellido" required>
-                </div>
-            </div>
-
-            <div class="fila">
-                <div>
-                    <label for="telefono">Teléfono</label>
-                    <input type="tel" id="telefono" required>
-                </div>
-                <div>
-                    <label for="localidad">Localidad</label>
-                    <input type="text" id="localidad" value="Río Grande" required>
-                </div>
-            </div>
-
-            <div class="fila">
-                <div>
-                    <label for="nombreUsuario">Usuario</label>
-                    <input type="text" id="nombreUsuario" required autocomplete="username">
-                </div>
-                <div>
-                    <label for="contrasena">Contraseña</label>
-                    <input type="password" id="contrasena" required minlength="6" autocomplete="new-password">
-                </div>
-            </div>
-
-            <!-- Campos que solo ve un profesional -->
-            <div id="camposProfesional">
-                <label for="tipoProfesional">Profesión</label>
-                <select id="tipoProfesional">
-                    <option value="Enfermero/a">Enfermero/a</option>
-                    <option value="Acompañante terapéutico">Acompañante terapéutico</option>
+            <form id="formRegistro">
+                <label for="tipoCuenta">Quiero registrarme como</label>
+                <select id="tipoCuenta">
+                    <option value="profesional">Profesional (busco trabajo)</option>
+                    <option value="empleador">Empleador (busco profesionales)</option>
                 </select>
 
                 <div class="fila">
                     <div>
-                        <label for="matricula">Matrícula</label>
-                        <input type="text" id="matricula">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre" required>
                     </div>
                     <div>
-                        <label for="disponibilidad">Disponibilidad</label>
-                        <input type="text" id="disponibilidad" placeholder="Ej: mañanas">
+                        <label for="apellido">Apellido</label>
+                        <input type="text" id="apellido" required>
                     </div>
                 </div>
 
-                <label for="experiencia">Experiencia</label>
-                <textarea id="experiencia" maxlength="1500"></textarea>
-            </div>
+                <div class="fila">
+                    <div>
+                        <label for="telefono">Teléfono</label>
+                        <input type="tel" id="telefono" required>
+                    </div>
+                    <div>
+                        <label for="localidad">Localidad</label>
+                        <input type="text" id="localidad" value="Río Grande" required>
+                    </div>
+                </div>
 
-            <!-- Campos que solo ve un empleador -->
-            <div id="camposEmpleador" style="display: none;">
-                <label for="nombreEmpresa">Nombre de la empresa o institución</label>
-                <input type="text" id="nombreEmpresa">
+                <div class="fila">
+                    <div>
+                        <label for="nombreUsuario">Usuario</label>
+                        <input type="text" id="nombreUsuario" required autocomplete="username">
+                    </div>
+                    <div>
+                        <label for="contrasena">Contraseña</label>
+                        <input type="password" id="contrasena" required minlength="6" autocomplete="new-password">
+                    </div>
+                </div>
 
-                <label for="descripcionPuesto">¿Qué tipo de personal necesitás?</label>
-                <textarea id="descripcionPuesto"></textarea>
-            </div>
+                <!-- Campos que solo ve un profesional -->
+                <div id="camposProfesional">
+                    <label for="tipoProfesional">Profesión</label>
+                    <select id="tipoProfesional">
+                        <option value="Enfermero/a">Enfermero/a</option>
+                        <option value="Acompañante terapéutico">Acompañante terapéutico</option>
+                    </select>
 
-            <button type="submit" class="boton boton-ancho">Registrarme</button>
-            <div id="mensaje" class="mensaje"></div>
-        </form>
+                    <div class="fila">
+                        <div>
+                            <label for="matricula">Matrícula</label>
+                            <input type="text" id="matricula">
+                        </div>
+                        <div>
+                            <label for="disponibilidad">Disponibilidad</label>
+                            <input type="text" id="disponibilidad" placeholder="Ej: mañanas">
+                        </div>
+                    </div>
 
-        <p class="pie-formulario">¿Ya tenés cuenta? <a href="login.html">Ingresá</a></p>
-    </div>
-</main>
+                    <label for="experiencia">Experiencia</label>
+                    <textarea id="experiencia" maxlength="1500"></textarea>
+                </div>
 
-<script src="js/api.js"></script>
-<script>
-    armarMenu();
+                <!-- Campos que solo ve un empleador -->
+                <div id="camposEmpleador" style="display: none;">
+                    <label for="nombreEmpresa">Nombre de la empresa o institución</label>
+                    <input type="text" id="nombreEmpresa">
 
-    const selector = document.getElementById("tipoCuenta");
-    const camposProfesional = document.getElementById("camposProfesional");
-    const camposEmpleador = document.getElementById("camposEmpleador");
+                    <label for="descripcionPuesto">¿Qué tipo de personal necesitás?</label>
+                    <textarea id="descripcionPuesto" maxlength="255"></textarea>
+                </div>
 
-    // Muestra los campos que corresponden al tipo de cuenta elegido
-    selector.addEventListener("change", function () {
-        const esProfesional = selector.value === "profesional";
-        camposProfesional.style.display = esProfesional ? "block" : "none";
-        camposEmpleador.style.display = esProfesional ? "none" : "block";
-    });
+                <button type="submit" class="boton boton-ancho">Registrarme</button>
+                <div id="mensaje" class="mensaje"></div>
+            </form>
 
-    document.getElementById("formRegistro").addEventListener("submit", async function (evento) {
-        evento.preventDefault();
-        const mensaje = document.getElementById("mensaje");
-        const esProfesional = selector.value === "profesional";
+            <p class="pie-formulario">¿Ya tenés cuenta? <a href="login.html">Ingresá</a></p>
+        </div>
+    </main>
 
-        // Datos que comparten los dos tipos de cuenta
-        const datos = {
-            nombre: document.getElementById("nombre").value.trim(),
-            apellido: document.getElementById("apellido").value.trim(),
-            telefono: document.getElementById("telefono").value.trim(),
-            localidad: document.getElementById("localidad").value.trim(),
-            nombreUsuario: document.getElementById("nombreUsuario").value.trim(),
-            contrasena: document.getElementById("contrasena").value
-        };
+    <script src="js/api.js"></script>
+    <script>
+        armarMenu();
 
-        let url;
-        if (esProfesional) {
-            url = "/api/profesionales/registro";
-            datos.tipoProfesional = document.getElementById("tipoProfesional").value;
-            datos.matricula = document.getElementById("matricula").value.trim();
-            datos.disponibilidad = document.getElementById("disponibilidad").value.trim();
-            datos.experiencia = document.getElementById("experiencia").value.trim();
-        } else {
-            url = "/api/empleadores/registro";
-            datos.nombreEmpresa = document.getElementById("nombreEmpresa").value.trim();
-            datos.descripcionPuesto = document.getElementById("descripcionPuesto").value.trim();
-        }
+        const selector = document.getElementById("tipoCuenta");
+        const camposProfesional = document.getElementById("camposProfesional");
+        const camposEmpleador = document.getElementById("camposEmpleador");
 
-        const resultado = await pedir(url, "POST", datos);
+        // Muestra los campos que corresponden al tipo de cuenta elegido
+        selector.addEventListener("change", function () {
+            const esProfesional = selector.value === "profesional";
+            camposProfesional.style.display = esProfesional ? "block" : "none";
+            camposEmpleador.style.display = esProfesional ? "none" : "block";
+        });
 
-        if (resultado.ok) {
-            mostrarMensaje(mensaje, "¡Cuenta creada! Te llevamos al ingreso...", "ok");
-            setTimeout(function () { window.location.href = "login.html"; }, 1500);
-        } else {
-            mostrarMensaje(mensaje, "No se pudo crear la cuenta. Revisá los datos (puede que el usuario ya exista).", "error");
-        }
-    });
-</script>
+        document.getElementById("formRegistro").addEventListener("submit", async function (evento) {
+            evento.preventDefault();
+            const mensaje = document.getElementById("mensaje");
+            const esProfesional = selector.value === "profesional";
+
+            // Datos que comparten los dos tipos de cuenta
+            const datos = {
+                nombre: document.getElementById("nombre").value.trim(),
+                apellido: document.getElementById("apellido").value.trim(),
+                telefono: document.getElementById("telefono").value.trim(),
+                localidad: document.getElementById("localidad").value.trim(),
+                nombreUsuario: document.getElementById("nombreUsuario").value.trim(),
+                contrasena: document.getElementById("contrasena").value
+            };
+
+            let url;
+            if (esProfesional) {
+                url = "/api/profesionales/registro";
+                datos.tipoProfesional = document.getElementById("tipoProfesional").value;
+                datos.matricula = document.getElementById("matricula").value.trim();
+                datos.disponibilidad = document.getElementById("disponibilidad").value.trim();
+                datos.experiencia = document.getElementById("experiencia").value.trim();
+            } else {
+                url = "/api/empleadores/registro";
+                datos.nombreEmpresa = document.getElementById("nombreEmpresa").value.trim();
+                datos.descripcionPuesto = document.getElementById("descripcionPuesto").value.trim();
+            }
+
+            const resultado = await pedir(url, "POST", datos);
+
+            if (resultado.ok) {
+                mostrarMensaje(mensaje, "¡Cuenta creada! Te llevamos al ingreso...", "ok");
+                setTimeout(function () { window.location.href = "login.html"; }, 1500);
+            } else {
+                mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo crear la cuenta."), "error");
+            }
+        });
+    </script>
 </body>
 </html>

@@ -2,7 +2,7 @@ package com.acompanAR.backend.controller;
 import com.acompanAR.backend.dto.EmpleadorEdicionDTO;
 import com.acompanAR.backend.dto.EmpleadorRegistroDTO;
 import com.acompanAR.backend.entity.Empleador;
-import com.acompanAR.backend.entity.Estadopostulacion;
+import com.acompanAR.backend.entity.EstadoPostulacion;
 import com.acompanAR.backend.entity.OfertaLaboral;
 import com.acompanAR.backend.entity.Postulacion;
 import com.acompanAR.backend.entity.Persona;
@@ -109,8 +109,8 @@ public class EmpleadorController {
             oferta.setActiva(false);
             ofertaLaboralRepository.save(oferta);
             for (Postulacion postulacion : postulacionRepository.findByOfertaLaboralId(oferta.getId())) {
-                if (postulacion.getEstado() == Estadopostulacion.PENDIENTE) {
-                    postulacion.setEstado(Estadopostulacion.RECHAZADA);
+                if (postulacion.getEstado() == EstadoPostulacion.PENDIENTE) {
+                    postulacion.setEstado(EstadoPostulacion.RECHAZADA);
                     postulacionRepository.save(postulacion);
                 }
             }

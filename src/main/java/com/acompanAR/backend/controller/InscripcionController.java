@@ -7,6 +7,7 @@ import com.acompanAR.backend.entity.Profesional;
 import com.acompanAR.backend.repository.CapacitacionRepository;
 import com.acompanAR.backend.repository.InscripcionRepository;
 import com.acompanAR.backend.repository.ProfesionalRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -26,7 +27,7 @@ public class InscripcionController {
     private CapacitacionRepository capacitacionRepository;
 
     @PostMapping("/nueva")
-    public Inscripcion crearInscripcion(@RequestBody InscripcionRegistroDTO dto, Authentication authentication) {
+    public Inscripcion crearInscripcion(@Valid @RequestBody InscripcionRegistroDTO dto, Authentication authentication) {
 
         // Verificamos que el profesional exista
         Profesional profesional = profesionalRepository.findById(dto.getIdProfesional())

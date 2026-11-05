@@ -3,10 +3,14 @@ import com.acompanAR.backend.entity.EstadoInscripcionCapacitacion;
 import com.acompanAR.backend.entity.Inscripcion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
+
+@Repository
 public interface InscripcionRepository extends JpaRepository <Inscripcion,Long> {
-    //esto es para que el profesional pueda ver sus inscripciones
+    // Para que el profesional vea sus inscripciones
     List<Inscripcion> findByProfesionalId(Long idProfesional);
-    // Para evitar que se inscriba dos veces a la misma capacitacion mientras sigue vigente
+
+    // Para evitar que se inscriba dos veces a la misma capacitación mientras sigue vigente
     boolean existsByProfesionalIdAndCapacitacionIdAndEstadoNot(Long idProfesional, Long idCapacitacion, EstadoInscripcionCapacitacion estado);
 }

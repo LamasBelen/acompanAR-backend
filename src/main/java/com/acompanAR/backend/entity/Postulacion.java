@@ -13,7 +13,7 @@ public class Postulacion {
     // Se guarda como texto ("PENDIENTE", "ACEPTADA", ...) para que la base de datos sea legible
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Estadopostulacion estado = Estadopostulacion.PENDIENTE;
+    private EstadoPostulacion estado = EstadoPostulacion.PENDIENTE;
 
     //la relacion con el profesional que se va a postular
     @ManyToOne
@@ -41,11 +41,11 @@ public class Postulacion {
         this.fechaPostulacion = fechaPostulacion;
     }
 
-    public Estadopostulacion getEstado() {
+    public EstadoPostulacion getEstado() {
         return estado;
     }
 
-    public void setEstado(Estadopostulacion estado) {
+    public void setEstado(EstadoPostulacion estado) {
         this.estado = estado;
     }
 
