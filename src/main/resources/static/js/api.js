@@ -47,6 +47,15 @@ async function cerrarSesion() {
     window.location.href = "index.html";
 }
 
+// Devuelve el mensaje de error que mandó el servidor (campo "mensaje"),
+// o un texto por defecto si el servidor no mandó ninguno (por ejemplo, si no hay conexión).
+function mensajeDeError(resultado, textoPorDefecto) {
+    if (resultado && resultado.datos && typeof resultado.datos === "object" && resultado.datos.mensaje) {
+        return resultado.datos.mensaje;
+    }
+    return textoPorDefecto;
+}
+
 // Muestra un mensaje de error o de éxito dentro de un elemento con class="mensaje"
 function mostrarMensaje(elemento, texto, tipo) {
     elemento.textContent = texto; // textContent (no innerHTML) evita inyectar HTML
@@ -71,11 +80,13 @@ async function armarMenu() {
                 { texto: "Ofertas", url: "ofertas.html" },
                 { texto: "Mis postulaciones", url: "mis-postulaciones.html" },
                 { texto: "Capacitaciones", url: "capacitaciones.html" },
-                { texto: "Mis capacitaciones", url: "mis-capacitaciones.html" }
+                { texto: "Mis capacitaciones", url: "mis-capacitaciones.html" },
+                { texto: "Mi perfil", url: "perfil.html" }
             ],
             EMPLEADOR: [
                 { texto: "Mis ofertas", url: "mis-ofertas.html" },
-                { texto: "Publicar oferta", url: "oferta-form.html" }
+                { texto: "Publicar oferta", url: "oferta-form.html" },
+                { texto: "Mi perfil", url: "perfil.html" }
             ],
             ADMINISTRADOR: [
                 { texto: "Capacitaciones", url: "admin-capacitaciones.html" },

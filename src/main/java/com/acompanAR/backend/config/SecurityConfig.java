@@ -67,12 +67,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/inscripciones/finalizar/**", "/api/inscripciones/cancelar/**").hasRole("PROFESIONAL")
                         .requestMatchers(HttpMethod.GET, "/api/inscripciones/profesional/**").hasRole("PROFESIONAL")
                         .requestMatchers(HttpMethod.PUT, "/api/profesionales/editar/**").hasRole("PROFESIONAL")
+                        .requestMatchers(HttpMethod.PUT, "/api/profesionales/baja/**").hasAnyRole("PROFESIONAL", "ADMINISTRADOR")
 
                         // ---- Solo EMPLEADOR ----
                         .requestMatchers(HttpMethod.POST, "/api/ofertas/publicar").hasRole("EMPLEADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/ofertas/baja/**").hasAnyRole("EMPLEADOR", "ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/ofertas/editar/**").hasRole("EMPLEADOR")
+                        .requestMatchers(HttpMethod.GET, "/api/ofertas/empleador/**").hasRole("EMPLEADOR")
+
+                        // ---- Listado completo de postulaciones: solo ADMINISTRADOR ----
+                        .requestMatchers(HttpMethod.GET, "/api/postulaciones").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/empleadores/editar/**").hasRole("EMPLEADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/empleadores/baja/**").hasAnyRole("EMPLEADOR", "ADMINISTRADOR")
 
                         // ---- Solo ADMINISTRADOR (por ahora quien publica capacitaciones) ----
                         .requestMatchers(HttpMethod.POST, "/api/capacitaciones/nueva").hasRole("ADMINISTRADOR")
@@ -99,4 +105,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-

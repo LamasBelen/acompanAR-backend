@@ -12,6 +12,11 @@ public class Empleador {
     private String nombreEmpresa;
     @Column( name = "decripcion_puesto")
     private String descripcionPuesto;
+
+    // Baja lógica: en vez de borrar al empleador, se marca como inactivo.
+    // El "default true" permite agregar la columna aunque ya existan empleadores cargados.
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean estado = true;
     //la relacion que tiene el empleador con fk_persona
     @OneToOne
     @JoinColumn(name = "fk_usuario")
@@ -44,6 +49,14 @@ public class Empleador {
         this.descripcionPuesto = descripcionPuesto;
     }
 
+    public boolean isEstado() {
+        return estado;
+    }
+
+    public void setEstado(boolean estado) {
+        this.estado = estado;
+    }
+
     public Usuario getUsuario() {
         return usuario;
     }
@@ -53,7 +66,7 @@ public class Empleador {
     }
 
 
-   
+
 
     public Persona getPersona() {
         return persona;

@@ -9,4 +9,7 @@ import java.util.Optional;
 public interface EmpleadorRepository extends JpaRepository<Empleador, Long> {
     // Busca el perfil de empleador que pertenece a un usuario (usuario.id)
     Optional<Empleador> findByUsuarioId(Long usuarioId);
+
+    //ESTO hace que solo los empleadores que no fueron dados de baja puedan ingresar
+    java.util.List<Empleador> findByEstadoTrue();
 }

@@ -10,4 +10,7 @@ import java.util.Optional;
 public interface ProfesionalRepository extends JpaRepository<Profesional, Long> {
     // Busca el perfil profesional que pertenece a un usuario (usuario.id)
     Optional<Profesional> findByUsuarioId(Long usuarioId);
+
+    // Solo los profesionales que no fueron dados de baja
+    java.util.List<Profesional> findByEstadoTrue();
 }

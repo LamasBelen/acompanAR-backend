@@ -4,7 +4,9 @@ import com.acompanAR.backend.entity.Capacitacion;
 import com.acompanAR.backend.repository.CapacitacionRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -36,11 +38,18 @@ public class CapacitacionController {
         return capacitacionRepository.findByActivaTrue();
     }
 
+    // Ver una capacitacion puntual (se usa para cargar el formulario de edición)
+    @GetMapping("/{id}")
+    public Capacitacion obtenerPorId(@PathVariable Long id) {
+        return capacitacionRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Capacitación no encontrada"));
+    }
+
     // Modificar una capacitacion existente
     @PutMapping("/editar/{id}")
     public Capacitacion editarCapacitacion(@PathVariable Long id, @Valid @RequestBody CapacitacionRegistroDTO dto) {
         Capacitacion capacitacion = capacitacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Capacitación no encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Capacitación no encontrada"));
 
         capacitacion.setTitulo(dto.getTitulo());
         capacitacion.setDescripcion(dto.getDescripcion());
@@ -57,7 +66,7 @@ public class CapacitacionController {
     @PutMapping("/baja/{id}")
     public Capacitacion darDeBajaCapacitacion(@PathVariable Long id) {
         Capacitacion capacitacion = capacitacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Capacitación no encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Capacitación no encontrada"));
 
         capacitacion.setActiva(false);
 

@@ -1,6 +1,9 @@
 package com.acompanAR.backend.controller;
 import com.acompanAR.backend.dto.InscripcionRegistroDTO;
-import com.acompanAR.backend.entity.*;
+import com.acompanAR.backend.entity.Capacitacion;
+import com.acompanAR.backend.entity.EstadoInscripcionCapacitacion;
+import com.acompanAR.backend.entity.Inscripcion;
+import com.acompanAR.backend.entity.Profesional;
 import com.acompanAR.backend.repository.CapacitacionRepository;
 import com.acompanAR.backend.repository.InscripcionRepository;
 import com.acompanAR.backend.repository.ProfesionalRepository;
@@ -23,11 +26,14 @@ public class InscripcionController {
     private CapacitacionRepository capacitacionRepository;
 
     @PostMapping("/nueva")
-    public Inscripcion crearInscripcion(@RequestBody InscripcionRegistroDTO dto) {
+    public Inscripcion crearInscripcion(@RequestBody InscripcionRegistroDTO dto, Authentication authentication) {
 
         // Verificamos que el profesional exista
         Profesional profesional = profesionalRepository.findById(dto.getIdProfesional())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profesional no encontrado"));
+
+        // Solo podés inscribirte a nombre tuyo
+        verificarProfesional(profesional, authentication);
 
         // Verificamos que el curso exista
         Capacitacion capacitacion = capacitacionRepository.findById(dto.getIdCapacitacion())
@@ -59,8 +65,18 @@ public class InscripcionController {
 
     // El profesional consulta sus inscripciones
     @GetMapping("/profesional/{idProfesional}")
-    public List<Inscripcion> porProfesional(@PathVariable Long idProfesional) {
+    public List<Inscripcion> porProfesional(@PathVariable Long idProfesional, Authentication authentication) {
+        Profesional profesional = profesionalRepository.findById(idProfesional)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profesional no encontrado"));
+        verificarProfesional(profesional, authentication);
         return inscripcionRepository.findByProfesionalId(idProfesional);
+    }
+
+    // 403 si el profesional no es el usuario logueado
+    private void verificarProfesional(Profesional profesional, Authentication authentication) {
+        if (!profesional.getUsuario().getNombreUsuario().equals(authentication.getName())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tenés permiso sobre los datos de otro profesional");
+        }
     }
 
     // Modificación: el profesional marca que terminó la capacitación
