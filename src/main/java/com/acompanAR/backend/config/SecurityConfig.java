@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -38,8 +37,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, SecurityContextRepository securityContextRepository) throws Exception {
         http
-                .cors(Customizer.withDefaults()) // usa el bean corsConfigurationSource de CorsConfig
-                // CSRF desactivado para simplificar el desarrollo con un front separado.
+                // CSRF desactivado para simplificar el desarrollo (el front está en la misma app, no hace falta CORS).
                 // En producción convendría activarlo (o usar tokens JWT).
                 .csrf(csrf -> csrf.disable())
                 .securityContext(sc -> sc.securityContextRepository(securityContextRepository))
@@ -53,7 +51,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/profesionales/registro").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/empleadores/registro").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // preflight de CORS
                         // Listas necesarias para el formulario de registro (localidades y tipos de profesional)
                         .requestMatchers(HttpMethod.GET, "/api/catalogos/**", "/api/tipos-profesional").permitAll()
 
