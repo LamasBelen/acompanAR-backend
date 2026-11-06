@@ -24,7 +24,7 @@
                 <input type="text" id="tituloCap" required maxlength="255">
 
                 <label for="institucion">Institución</label>
-                <input type="text" id="institucion" required maxlength="255" placeholder="Ej: Ministerio de Salud">
+                <select id="institucion" required></select>
 
                 <label for="descripcion">Descripción</label>
                 <textarea id="descripcion" required maxlength="1000"></textarea>
@@ -69,6 +69,11 @@
                 return;
             }
 
+            // La institución se elige de la lista de instituciones activas (tabla "instituciones")
+            const instituciones = await pedir("/api/instituciones");
+            llenarSelect(document.getElementById("institucion"),
+                (instituciones.ok ? instituciones.datos : []).map(function (i) { return { valor: i.id, texto: i.nombre }; }));
+
             if (idCapacitacion !== null) {
                 document.getElementById("titulo").textContent = "Editar capacitación";
                 document.getElementById("botonGuardar").textContent = "Guardar cambios";
@@ -80,7 +85,7 @@
                 }
                 const cap = resultado.datos;
                 document.getElementById("tituloCap").value = cap.titulo;
-                document.getElementById("institucion").value = cap.institucion;
+                document.getElementById("institucion").value = cap.institucion.id;
                 document.getElementById("descripcion").value = cap.descripcion;
                 document.getElementById("cargaHoraria").value = cap.cargaHoraria;
                 document.getElementById("fechaInicio").value = cap.fechaInicio || "";
@@ -95,7 +100,7 @@
             const enlace = document.getElementById("linkVideo").value.trim();
             const datos = {
                 titulo: document.getElementById("tituloCap").value.trim(),
-                institucion: document.getElementById("institucion").value.trim(),
+                institucionId: Number(document.getElementById("institucion").value),
                 descripcion: document.getElementById("descripcion").value.trim(),
                 cargaHoraria: parseInt(document.getElementById("cargaHoraria").value, 10),
                 fechaInicio: fecha === "" ? null : fecha,   // si no eligen fecha, el backend usa hoy + 15 días

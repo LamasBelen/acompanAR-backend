@@ -1,4 +1,5 @@
 package com.acompanAR.backend.controller;
+import com.acompanAR.backend.entity.Estado;
 import com.acompanAR.backend.dto.PostulacionRegistroDTO;
 import com.acompanAR.backend.entity.EstadoPostulacion;
 import com.acompanAR.backend.entity.OfertaLaboral;
@@ -41,7 +42,7 @@ public class PostulacionesController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Oferta laboral no encontrada"));
 
         // No se puede postular a una oferta que fue dada de baja
-        if (!oferta.isActiva()) {
+        if (oferta.getEstado() == Estado.INACTIVO) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La oferta laboral ya no está activa");
         }
         // No se puede postular dos veces a la misma oferta

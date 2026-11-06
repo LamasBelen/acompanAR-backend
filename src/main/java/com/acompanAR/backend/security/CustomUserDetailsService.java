@@ -1,5 +1,7 @@
 package com.acompanAR.backend.security;
 
+import com.acompanAR.backend.entity.Estado;
+
 import com.acompanAR.backend.entity.Usuario;
 import com.acompanAR.backend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +33,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new User(
                 usuario.getNombreUsuario(),
                 usuario.getContrasena(),          // ya viene hasheada con BCrypt
-                usuario.isEstado(),               // enabled: un usuario dado de baja no puede loguearse
+                usuario.getEstado() == Estado.ACTIVO,               // enabled: un usuario dado de baja no puede loguearse
                 true, true, true,
                 List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name()))
         );

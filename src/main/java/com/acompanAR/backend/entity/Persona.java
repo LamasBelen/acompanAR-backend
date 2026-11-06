@@ -10,7 +10,8 @@ public class Persona {
     private String nombre;
     private String apellido;
     private String telefono;
-    private String localidad;
+    @Enumerated(EnumType.STRING)
+    private Localidad localidad;
 
     public Long getId() {
         return id;
@@ -44,11 +45,11 @@ public class Persona {
         this.telefono = telefono;
     }
 
-    public String getLocalidad() {
+    public Localidad getLocalidad() {
         return localidad;
     }
 
-    public void setLocalidad(String localidad) {
+    public void setLocalidad(Localidad localidad) {
         this.localidad = localidad;
     }
 }

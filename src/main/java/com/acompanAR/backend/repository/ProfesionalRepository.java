@@ -1,5 +1,6 @@
 package com.acompanAR.backend.repository;
 
+import com.acompanAR.backend.entity.Estado;
 import com.acompanAR.backend.entity.Profesional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -12,5 +13,5 @@ public interface ProfesionalRepository extends JpaRepository<Profesional, Long> 
     Optional<Profesional> findByUsuarioId(Long usuarioId);
 
     // Solo los profesionales que no fueron dados de baja
-    java.util.List<Profesional> findByEstadoTrue();
+    java.util.List<Profesional> findByEstado(Estado estado);
 }

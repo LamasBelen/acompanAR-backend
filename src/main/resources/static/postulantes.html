@@ -35,6 +35,7 @@
         const mensaje = document.getElementById("mensaje");
 
         async function cargar() {
+            await cargarLocalidades(); // para mostrar "Río Grande" en vez de "RIO_GRANDE"
             const usuario = await requerirSesion();
             if (usuario === null) return;
 
@@ -71,7 +72,7 @@
             const info = crear("div");
             info.appendChild(crear("h2", "", persona.nombre + " " + persona.apellido));
             info.appendChild(crear("p", "detalle",
-                profesional.tipoProfesional + " · " + persona.localidad +
+                profesional.tipoProfesional.nombre + " · " + nombreLocalidad(persona.localidad) +
                 " · Se postuló el " + formatearFecha(postulacion.fechaPostulacion)));
             if (profesional.matricula) {
                 info.appendChild(crear("p", "detalle", "Matrícula: " + profesional.matricula));
@@ -79,8 +80,9 @@
             if (profesional.disponibilidad) {
                 info.appendChild(crear("p", "detalle", "Disponibilidad: " + profesional.disponibilidad));
             }
-            if (profesional.experiencia) {
-                info.appendChild(crear("p", "", profesional.experiencia));
+            info.appendChild(crear("p", "detalle", "Experiencia: " + profesional.aniosExperiencia + " año(s)"));
+            if (profesional.descripcionExperiencia) {
+                info.appendChild(crear("p", "", profesional.descripcionExperiencia));
             }
             // Cuando el empleador acepta, se habilita el contacto
             if (postulacion.estado === "ACEPTADA") {

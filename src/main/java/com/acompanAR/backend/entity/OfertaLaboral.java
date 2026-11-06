@@ -13,7 +13,10 @@ public class OfertaLaboral {
     private String descripcion;
     private String requisitos;
     private LocalDate fechaPublicacion;
-    private boolean activa;
+    // Baja lógica: una oferta dada de baja queda INACTIVA y deja de mostrarse.
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Estado estado = Estado.ACTIVO;
 
     //la relacion que tiene es que muchas ofertas pueden pertenecer a un mismo empleador
     @ManyToOne
@@ -60,12 +63,12 @@ public class OfertaLaboral {
         this.fechaPublicacion = fechaPublicacion;
     }
 
-    public boolean isActiva() {
-        return activa;
+    public Estado getEstado() {
+        return estado;
     }
 
-    public void setActiva(boolean activa) {
-        this.activa = activa;
+    public void setEstado(Estado estado) {
+        this.estado = estado;
     }
 
     public Empleador getEmpleador() {

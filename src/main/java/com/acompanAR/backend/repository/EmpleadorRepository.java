@@ -1,5 +1,6 @@
 package com.acompanAR.backend.repository;
 import com.acompanAR.backend.entity.Empleador;
+import com.acompanAR.backend.entity.Estado;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +12,5 @@ public interface EmpleadorRepository extends JpaRepository<Empleador, Long> {
     Optional<Empleador> findByUsuarioId(Long usuarioId);
 
     // Solo los empleadores que no fueron dados de baja
-    java.util.List<Empleador> findByEstadoTrue();
+    java.util.List<Empleador> findByEstado(Estado estado);
 }

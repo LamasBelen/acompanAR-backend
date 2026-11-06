@@ -1,4 +1,5 @@
 package com.acompanAR.backend.controller;
+import com.acompanAR.backend.entity.Estado;
 import com.acompanAR.backend.dto.InscripcionRegistroDTO;
 import com.acompanAR.backend.entity.Capacitacion;
 import com.acompanAR.backend.entity.EstadoInscripcionCapacitacion;
@@ -40,7 +41,7 @@ public class InscripcionController {
         Capacitacion capacitacion = capacitacionRepository.findById(dto.getIdCapacitacion())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Capacitación no encontrada"));
 
-        if (!capacitacion.isActiva()) {
+        if (capacitacion.getEstado() == Estado.INACTIVO) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La capacitación ya no está disponible");
         }
         // No se puede estar inscripto dos veces (salvo que la anterior se haya cancelado)

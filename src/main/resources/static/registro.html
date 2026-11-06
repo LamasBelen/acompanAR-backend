@@ -44,7 +44,7 @@
                     </div>
                     <div>
                         <label for="localidad">Localidad</label>
-                        <input type="text" id="localidad" value="Río Grande" required>
+                        <select id="localidad" required></select>
                     </div>
                 </div>
 
@@ -62,15 +62,12 @@
                 <!-- Campos que solo ve un profesional -->
                 <div id="camposProfesional">
                     <label for="tipoProfesional">Profesión</label>
-                    <select id="tipoProfesional">
-                        <option value="Enfermero/a">Enfermero/a</option>
-                        <option value="Acompañante terapéutico">Acompañante terapéutico</option>
-                    </select>
+                    <select id="tipoProfesional"></select>
 
                     <div class="fila">
                         <div>
                             <label for="matricula">Matrícula</label>
-                            <input type="text" id="matricula">
+                            <input type="text" id="matricula" maxlength="20">
                         </div>
                         <div>
                             <label for="disponibilidad">Disponibilidad</label>
@@ -78,8 +75,15 @@
                         </div>
                     </div>
 
-                    <label for="experiencia">Experiencia</label>
-                    <textarea id="experiencia" maxlength="1500"></textarea>
+                    <div class="fila">
+                        <div>
+                            <label for="aniosExperiencia">Años de experiencia</label>
+                            <input type="number" id="aniosExperiencia" min="0" max="60" value="0" required>
+                        </div>
+                    </div>
+
+                    <label for="descripcionExperiencia">Contanos tu experiencia</label>
+                    <textarea id="descripcionExperiencia" maxlength="1500" placeholder="Ej: trabajé en cuidados intensivos y en domicilio..."></textarea>
                 </div>
 
                 <!-- Campos que solo ve un empleador -->
@@ -102,6 +106,9 @@
     <script src="js/api.js"></script>
     <script>
         armarMenu();
+        // Las listas desplegables se llenan con datos del servidor (enum de localidades y tabla de tipos de profesional)
+        llenarLocalidades(document.getElementById("localidad"));
+        llenarTiposProfesional(document.getElementById("tipoProfesional"));
 
         const selector = document.getElementById("tipoCuenta");
         const camposProfesional = document.getElementById("camposProfesional");
@@ -124,7 +131,7 @@
                 nombre: document.getElementById("nombre").value.trim(),
                 apellido: document.getElementById("apellido").value.trim(),
                 telefono: document.getElementById("telefono").value.trim(),
-                localidad: document.getElementById("localidad").value.trim(),
+                localidad: document.getElementById("localidad").value,
                 nombreUsuario: document.getElementById("nombreUsuario").value.trim(),
                 contrasena: document.getElementById("contrasena").value
             };
@@ -132,10 +139,11 @@
             let url;
             if (esProfesional) {
                 url = "/api/profesionales/registro";
-                datos.tipoProfesional = document.getElementById("tipoProfesional").value;
+                datos.tipoProfesionalId = Number(document.getElementById("tipoProfesional").value);
                 datos.matricula = document.getElementById("matricula").value.trim();
                 datos.disponibilidad = document.getElementById("disponibilidad").value.trim();
-                datos.experiencia = document.getElementById("experiencia").value.trim();
+                datos.aniosExperiencia = Number(document.getElementById("aniosExperiencia").value);
+                datos.descripcionExperiencia = document.getElementById("descripcionExperiencia").value.trim();
             } else {
                 url = "/api/empleadores/registro";
                 datos.nombreEmpresa = document.getElementById("nombreEmpresa").value.trim();

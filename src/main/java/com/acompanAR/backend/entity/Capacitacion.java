@@ -14,15 +14,19 @@ public class Capacitacion {
 
     @Column(length = 1000)
     private String descripcion;
-    private String institucion;
+
+    // La institución es otra entidad (tabla "instituciones"): muchas capacitaciones pueden ser de la misma institución
+    @ManyToOne
+    @JoinColumn(name = "fk_institucion", nullable = false)
+    private Institucion institucion;
     private String linkVideo;
     private int cargaHoraria;
     private LocalDate fechaInicio;
 
-    // Baja lógica: en vez de borrar la capacitación, se marca como inactiva.
-    // El "default true" permite que Hibernate agregue la columna aunque ya existan filas en la tabla.
-    @Column(nullable = false, columnDefinition = "boolean default true")
-    private boolean activa = true;
+    // Baja lógica: en vez de borrar la capacitación, se marca como INACTIVA.
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Estado estado = Estado.ACTIVO;
 
     public Long getId() {
         return id;
@@ -48,11 +52,11 @@ public class Capacitacion {
         this.descripcion = descripcion;
     }
 
-    public String getInstitucion() {
+    public Institucion getInstitucion() {
         return institucion;
     }
 
-    public void setInstitucion(String institucion) {
+    public void setInstitucion(Institucion institucion) {
         this.institucion = institucion;
     }
 
@@ -80,11 +84,11 @@ public class Capacitacion {
         this.fechaInicio = fechaInicio;
     }
 
-    public boolean isActiva() {
-        return activa;
+    public Estado getEstado() {
+        return estado;
     }
 
-    public void setActiva(boolean activa) {
-        this.activa = activa;
+    public void setEstado(Estado estado) {
+        this.estado = estado;
     }
 }

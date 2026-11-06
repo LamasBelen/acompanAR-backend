@@ -38,22 +38,19 @@
                     </div>
                     <div>
                         <label for="localidad">Localidad</label>
-                        <input type="text" id="localidad" required maxlength="100">
+                        <select id="localidad" required></select>
                     </div>
                 </div>
 
                 <!-- Campos que solo ve un profesional -->
                 <div id="camposProfesional" style="display: none;">
                     <label for="tipoProfesional">Profesión</label>
-                    <select id="tipoProfesional">
-                        <option value="Enfermero/a">Enfermero/a</option>
-                        <option value="Acompañante terapéutico">Acompañante terapéutico</option>
-                    </select>
+                    <select id="tipoProfesional"></select>
 
                     <div class="fila">
                         <div>
                             <label for="matricula">Matrícula</label>
-                            <input type="text" id="matricula" maxlength="255">
+                            <input type="text" id="matricula" maxlength="20">
                         </div>
                         <div>
                             <label for="disponibilidad">Disponibilidad</label>
@@ -61,8 +58,15 @@
                         </div>
                     </div>
 
-                    <label for="experiencia">Experiencia</label>
-                    <textarea id="experiencia" maxlength="1500"></textarea>
+                    <div class="fila">
+                        <div>
+                            <label for="aniosExperiencia">Años de experiencia</label>
+                            <input type="number" id="aniosExperiencia" min="0" max="60" value="0" required>
+                        </div>
+                    </div>
+
+                    <label for="descripcionExperiencia">Contanos tu experiencia</label>
+                    <textarea id="descripcionExperiencia" maxlength="1500"></textarea>
                 </div>
 
                 <!-- Campos que solo ve un empleador -->
@@ -111,6 +115,12 @@
 
             document.getElementById(esProfesional ? "camposProfesional" : "camposEmpleador").style.display = "block";
 
+            // Primero se llenan las listas desplegables y recién después se eligen los valores guardados
+            await llenarLocalidades(document.getElementById("localidad"));
+            if (esProfesional) {
+                await llenarTiposProfesional(document.getElementById("tipoProfesional"));
+            }
+
             const url = esProfesional
                 ? "/api/profesionales/" + usuario.idProfesional
                 : "/api/empleadores/" + usuario.idEmpleador;
@@ -127,10 +137,11 @@
             document.getElementById("localidad").value = perfil.persona.localidad;
 
             if (esProfesional) {
-                document.getElementById("tipoProfesional").value = perfil.tipoProfesional;
+                document.getElementById("tipoProfesional").value = perfil.tipoProfesional.id;
                 document.getElementById("matricula").value = perfil.matricula || "";
                 document.getElementById("disponibilidad").value = perfil.disponibilidad || "";
-                document.getElementById("experiencia").value = perfil.experiencia || "";
+                document.getElementById("aniosExperiencia").value = perfil.aniosExperiencia;
+                document.getElementById("descripcionExperiencia").value = perfil.descripcionExperiencia || "";
             } else {
                 document.getElementById("nombreEmpresa").value = perfil.nombreEmpresa || "";
                 document.getElementById("descripcionPuesto").value = perfil.descripcionPuesto || "";
@@ -144,16 +155,17 @@
                 nombre: document.getElementById("nombre").value.trim(),
                 apellido: document.getElementById("apellido").value.trim(),
                 telefono: document.getElementById("telefono").value.trim(),
-                localidad: document.getElementById("localidad").value.trim()
+                localidad: document.getElementById("localidad").value
             };
 
             let url;
             if (esProfesional) {
                 url = "/api/profesionales/editar/" + usuario.idProfesional;
-                datos.tipoProfesional = document.getElementById("tipoProfesional").value;
+                datos.tipoProfesionalId = Number(document.getElementById("tipoProfesional").value);
                 datos.matricula = document.getElementById("matricula").value.trim();
                 datos.disponibilidad = document.getElementById("disponibilidad").value.trim();
-                datos.experiencia = document.getElementById("experiencia").value.trim();
+                datos.aniosExperiencia = Number(document.getElementById("aniosExperiencia").value);
+                datos.descripcionExperiencia = document.getElementById("descripcionExperiencia").value.trim();
             } else {
                 url = "/api/empleadores/editar/" + usuario.idEmpleador;
                 datos.nombreEmpresa = document.getElementById("nombreEmpresa").value.trim();

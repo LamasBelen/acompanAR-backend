@@ -1,5 +1,4 @@
 package com.acompanAR.backend.entity;
-import com.acompanAR.backend.dto.EmpleadorRegistroDTO;
 import jakarta.persistence.*;
 @Entity
 @Table (name = "empleadores")
@@ -13,10 +12,10 @@ public class Empleador {
     @Column( name = "decripcion_puesto")
     private String descripcionPuesto;
 
-    // Baja lógica: en vez de borrar al empleador, se marca como inactivo.
-    // El "default true" permite agregar la columna aunque ya existan empleadores cargados.
-    @Column(nullable = false, columnDefinition = "boolean default true")
-    private boolean estado = true;
+    // Baja lógica: en vez de borrar al empleador, se marca como INACTIVO.
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Estado estado = Estado.ACTIVO;
     //la relacion que tiene el empleador con fk_persona
     @OneToOne
     @JoinColumn(name = "fk_usuario")
@@ -49,11 +48,11 @@ public class Empleador {
         this.descripcionPuesto = descripcionPuesto;
     }
 
-    public boolean isEstado() {
+    public Estado getEstado() {
         return estado;
     }
 
-    public void setEstado(boolean estado) {
+    public void setEstado(Estado estado) {
         this.estado = estado;
     }
 
@@ -66,7 +65,7 @@ public class Empleador {
     }
 
 
-
+   
 
     public Persona getPersona() {
         return persona;

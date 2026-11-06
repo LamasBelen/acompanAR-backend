@@ -15,7 +15,9 @@ public class Usuario {
 
     @Enumerated (EnumType.STRING)
     private Rol rol;
-    private boolean estado;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Estado estado = Estado.ACTIVO;
 
     //pongo la relacion que tiene usuario con persona
     @OneToOne
@@ -54,11 +56,11 @@ public class Usuario {
         this.rol = rol;
     }
 
-    public boolean isEstado() {
+    public Estado getEstado() {
         return estado;
     }
 
-    public void setEstado(boolean estado) {
+    public void setEstado(Estado estado) {
         this.estado = estado;
     }
 

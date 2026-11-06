@@ -13,9 +13,8 @@ public class CapacitacionRegistroDTO {
     @NotBlank (message = "La descripcion no puede estar vacia")
     @Size(max = 1000, message = "La descripción no puede superar los 1000 caracteres")
     private String descripcion;
-    @NotBlank (message = "El nombre de la institucion es obligatorio")
-    @Size(max = 255, message = "La institución no puede superar los 255 caracteres")
-    private String institucion;
+    @NotNull(message = "La institución es obligatoria")
+    private Long institucionId; // id de un registro de la tabla instituciones
     @NotNull(message = "La carga horaria no puede estar vacia")
     @Positive(message = "La carga horaria debe ser mayor a 0")
     private Integer cargaHoraria;
@@ -41,12 +40,12 @@ public class CapacitacionRegistroDTO {
         this.descripcion = descripcion;
     }
 
-    public String getInstitucion() {
-        return institucion;
+    public Long getInstitucionId() {
+        return institucionId;
     }
 
-    public void setInstitucion(String institucion) {
-        this.institucion = institucion;
+    public void setInstitucionId(Long institucionId) {
+        this.institucionId = institucionId;
     }
 
     public Integer getCargaHoraria() {

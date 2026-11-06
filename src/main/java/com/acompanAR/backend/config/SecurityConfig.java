@@ -54,6 +54,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/profesionales/registro").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/empleadores/registro").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // preflight de CORS
+                        // Listas necesarias para el formulario de registro (localidades y tipos de profesional)
+                        .requestMatchers(HttpMethod.GET, "/api/catalogos/**", "/api/tipos-profesional").permitAll()
 
                         // ---- Solo PROFESIONAL ----
                         .requestMatchers(HttpMethod.POST, "/api/postulaciones/nueva").hasRole("PROFESIONAL")
@@ -84,6 +86,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/capacitaciones/nueva").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/capacitaciones/baja/**").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/capacitaciones/editar/**").hasRole("ADMINISTRADOR")
+
+                        .requestMatchers(HttpMethod.POST, "/api/tipos-profesional/nuevo").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/tipos-profesional/editar/**", "/api/tipos-profesional/baja/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/api/instituciones/nueva").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/instituciones/editar/**", "/api/instituciones/baja/**").hasRole("ADMINISTRADOR")
 
                         // ---- Consulta del listado de profesionales: empleadores y admin ----
                         .requestMatchers(HttpMethod.GET, "/api/profesionales").hasAnyRole("EMPLEADOR", "ADMINISTRADOR")

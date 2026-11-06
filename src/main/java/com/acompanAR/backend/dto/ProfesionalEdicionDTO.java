@@ -1,4 +1,9 @@
 package com.acompanAR.backend.dto;
+
+import com.acompanAR.backend.entity.Localidad;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotBlank;
 
@@ -14,19 +19,21 @@ public class ProfesionalEdicionDTO {
     @NotBlank(message = "El telefono es obligatorio")
     @Size(max = 30, message = "El teléfono no puede superar los 30 caracteres")
     private String telefono;
-    @NotBlank(message = "La localidad es obligatoria")
-    @Size(max = 100, message = "La localidad no puede superar los 100 caracteres")
-    private String localidad;
+    @NotNull(message = "La localidad es obligatoria")
+    private Localidad localidad;
 
-    @NotBlank(message = "El tipo de profesional es obligatorio")
-    @Size(max = 255, message = "El tipo de profesional es demasiado largo")
-    private String tipoProfesional;
-    @Size(max = 1500, message = "La experiencia no puede superar los 1500 caracteres")
-    private String experiencia;     // opcional
+    @NotNull(message = "El tipo de profesional es obligatorio")
+    private Long tipoProfesionalId; // id de un registro de la tabla tipos_profesional
+    @NotNull(message = "Los años de experiencia son obligatorios (si no tenés, poné 0)")
+    @Min(value = 0, message = "Los años de experiencia no pueden ser negativos")
+    @Max(value = 60, message = "Los años de experiencia no pueden superar 60")
+    private Integer aniosExperiencia;
+    @Size(max = 1500, message = "La descripción de la experiencia no puede superar los 1500 caracteres")
+    private String descripcionExperiencia; // opcional
     @Size(max = 255, message = "La disponibilidad no puede superar los 255 caracteres")
     private String disponibilidad;  // opcional
-    @Size(max = 255, message = "La matrícula no puede superar los 255 caracteres")
-    private String matricula;       // opcional
+    @Size(max = 20, message = "La matrícula no puede superar los 20 caracteres")
+    private String matricula; // opcional
 
     public String getNombre() {
         return nombre;
@@ -52,28 +59,36 @@ public class ProfesionalEdicionDTO {
         this.telefono = telefono;
     }
 
-    public String getLocalidad() {
+    public Localidad getLocalidad() {
         return localidad;
     }
 
-    public void setLocalidad(String localidad) {
+    public void setLocalidad(Localidad localidad) {
         this.localidad = localidad;
     }
 
-    public String getTipoProfesional() {
-        return tipoProfesional;
+    public Long getTipoProfesionalId() {
+        return tipoProfesionalId;
     }
 
-    public void setTipoProfesional(String tipoProfesional) {
-        this.tipoProfesional = tipoProfesional;
+    public void setTipoProfesionalId(Long tipoProfesionalId) {
+        this.tipoProfesionalId = tipoProfesionalId;
     }
 
-    public String getExperiencia() {
-        return experiencia;
+    public Integer getAniosExperiencia() {
+        return aniosExperiencia;
     }
 
-    public void setExperiencia(String experiencia) {
-        this.experiencia = experiencia;
+    public void setAniosExperiencia(Integer aniosExperiencia) {
+        this.aniosExperiencia = aniosExperiencia;
+    }
+
+    public String getDescripcionExperiencia() {
+        return descripcionExperiencia;
+    }
+
+    public void setDescripcionExperiencia(String descripcionExperiencia) {
+        this.descripcionExperiencia = descripcionExperiencia;
     }
 
     public String getDisponibilidad() {

@@ -1,4 +1,7 @@
 package com.acompanAR.backend.dto;
+
+import com.acompanAR.backend.entity.Localidad;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotBlank;
 
@@ -14,9 +17,8 @@ public class EmpleadorEdicionDTO {
     @NotBlank(message = "El telefono es obligatorio")
     @Size(max = 30, message = "El teléfono no puede superar los 30 caracteres")
     private String telefono;
-    @NotBlank(message = "La localidad es obligatoria")
-    @Size(max = 100, message = "La localidad no puede superar los 100 caracteres")
-    private String localidad;
+    @NotNull(message = "La localidad es obligatoria")
+    private Localidad localidad;
 
     @NotBlank(message = "El nombre de la empresa es obligatorio")
     @Size(max = 255, message = "El nombre de la empresa es demasiado largo")
@@ -48,11 +50,11 @@ public class EmpleadorEdicionDTO {
         this.telefono = telefono;
     }
 
-    public String getLocalidad() {
+    public Localidad getLocalidad() {
         return localidad;
     }
 
-    public void setLocalidad(String localidad) {
+    public void setLocalidad(Localidad localidad) {
         this.localidad = localidad;
     }
 

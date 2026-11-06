@@ -65,7 +65,7 @@
             const info = crear("div");
             info.appendChild(crear("h2", "", cap.titulo));
             info.appendChild(crear("p", "detalle",
-                cap.institucion + " · " + cap.cargaHoraria + " hs · Comienza el " + formatearFecha(cap.fechaInicio)));
+                cap.institucion.nombre + " · " + cap.cargaHoraria + " hs · Comienza el " + formatearFecha(cap.fechaInicio)));
             info.appendChild(crear("p", "", cap.descripcion));
 
             const acciones = crear("div", "acciones");

@@ -90,7 +90,8 @@ async function armarMenu() {
             ],
             ADMINISTRADOR: [
                 { texto: "Capacitaciones", url: "admin-capacitaciones.html" },
-                { texto: "Nueva capacitación", url: "capacitacion-form.html" }
+                { texto: "Nueva capacitación", url: "capacitacion-form.html" },
+                { texto: "Instituciones y tipos", url: "admin-catalogos.html" }
             ]
         };
         const enlaces = enlacesPorRol[usuario.rol] || [];
@@ -126,6 +127,51 @@ function crear(etiqueta, clase, texto, atributos) {
 function crearEnlaceSeguro(url, texto) {
     if (!url || !/^https?:\/\//i.test(url)) return null;
     return crear("a", "", texto, { href: url, target: "_blank", rel: "noopener noreferrer" });
+}
+
+// ------------------------------------------
+// Listas desplegables (select) que vienen del servidor
+// ------------------------------------------
+
+// Llena un <select> con una lista de opciones [{ valor, texto }]
+function llenarSelect(select, opciones, textoInicial) {
+    select.innerHTML = "";
+    if (textoInicial) {
+        select.appendChild(crear("option", "", textoInicial, { value: "" }));
+    }
+    opciones.forEach(function (opcion) {
+        select.appendChild(crear("option", "", opcion.texto, { value: opcion.valor }));
+    });
+}
+
+// Localidades permitidas (enum del servidor). Se piden una sola vez y se guardan.
+let localidadesGuardadas = [];
+async function cargarLocalidades() {
+    if (localidadesGuardadas.length === 0) {
+        const resultado = await pedir("/api/catalogos/localidades");
+        if (resultado.ok) localidadesGuardadas = resultado.datos;
+    }
+    return localidadesGuardadas;
+}
+
+// Devuelve el nombre lindo de una localidad: "RIO_GRANDE" -> "Río Grande"
+// (hay que haber llamado antes a cargarLocalidades)
+function nombreLocalidad(codigo) {
+    const encontrada = localidadesGuardadas.find(function (l) { return l.codigo === codigo; });
+    return encontrada ? encontrada.nombre : codigo;
+}
+
+// Rellena un <select> con las localidades
+async function llenarLocalidades(select) {
+    const lista = await cargarLocalidades();
+    llenarSelect(select, lista.map(function (l) { return { valor: l.codigo, texto: l.nombre }; }));
+}
+
+// Rellena un <select> con los tipos de profesional activos
+async function llenarTiposProfesional(select) {
+    const resultado = await pedir("/api/tipos-profesional");
+    const lista = resultado.ok ? resultado.datos : [];
+    llenarSelect(select, lista.map(function (t) { return { valor: t.id, texto: t.nombre }; }));
 }
 
 // Convierte una fecha "2026-10-28" en "28/10/2026"

@@ -1,4 +1,5 @@
 package com.acompanAR.backend.controller;
+import com.acompanAR.backend.entity.Estado;
 import com.acompanAR.backend.dto.OfertaLaboralEdicionDTO;
 import com.acompanAR.backend.dto.OfertaLaboralRegistroDTO;
 import com.acompanAR.backend.entity.Empleador;
@@ -38,7 +39,7 @@ public class OfertaLaboralController {
 
         // La fecha y el estado los ponemos automáticamente por código, no se los pedimos al usuario
         oferta.setFechaPublicacion(LocalDate.now());
-        oferta.setActiva(true);
+        oferta.setEstado(Estado.ACTIVO);
 
         // Vinculo la oferta con el empleador
         oferta.setEmpleador(empleador);
@@ -49,7 +50,7 @@ public class OfertaLaboralController {
     // este es el metodo para ver las ofertas publicadas (solo las activas)
     @GetMapping
     public List<OfertaLaboral> obtenerTodas() {
-        return ofertaLaboralRepository.findByActivaTrue();
+        return ofertaLaboralRepository.findByEstado(Estado.ACTIVO);
     }
 
     // Ver una oferta puntual (se usa, por ejemplo, para cargar el formulario de edición)
@@ -65,7 +66,7 @@ public class OfertaLaboralController {
         Empleador empleador = empleadorRepository.findById(idEmpleador)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleador no encontrado"));
         verificarDuenio(empleador, authentication);
-        return ofertaLaboralRepository.findByEmpleadorIdAndActivaTrue(idEmpleador);
+        return ofertaLaboralRepository.findByEmpleadorIdAndEstado(idEmpleador, Estado.ACTIVO);
     }
 
     // Modificar una oferta ya publicada (solo su dueño)
@@ -80,7 +81,7 @@ public class OfertaLaboralController {
         verificarDuenio(oferta.getEmpleador(), authentication);
 
         // No tiene sentido modificar una oferta dada de baja
-        if (!oferta.isActiva()) {
+        if (oferta.getEstado() == Estado.INACTIVO) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La oferta ya fue dada de baja");
         }
 
@@ -103,7 +104,7 @@ public class OfertaLaboralController {
         }
 
         //aca es donde pasa la baja logica porque le cambio el estado en vez de borrarla
-        oferta.setActiva(false);
+        oferta.setEstado(Estado.INACTIVO);
         return ofertaLaboralRepository.save(oferta);
     }
 

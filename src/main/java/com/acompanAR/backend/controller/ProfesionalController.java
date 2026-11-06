@@ -1,6 +1,8 @@
 package com.acompanAR.backend.controller;
 
 
+import com.acompanAR.backend.entity.TipoProfesional;
+import com.acompanAR.backend.entity.Estado;
 import com.acompanAR.backend.dto.ProfesionalEdicionDTO;
 import com.acompanAR.backend.dto.ProfesionalRegistroDTO;
 import com.acompanAR.backend.entity.EstadoInscripcionCapacitacion;
@@ -15,6 +17,7 @@ import com.acompanAR.backend.security.Permisos;
 import com.acompanAR.backend.repository.InscripcionRepository;
 import com.acompanAR.backend.repository.PersonaRepository;
 import com.acompanAR.backend.repository.PostulacionRepository;
+import com.acompanAR.backend.repository.TipoProfesionalRepository;
 import com.acompanAR.backend.repository.ProfesionalRepository;
 import com.acompanAR.backend.repository.UsuarioRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +49,18 @@ public class ProfesionalController {
     private PostulacionRepository postulacionRepository;
     @Autowired
     private InscripcionRepository inscripcionRepository;
+    @Autowired
+    private TipoProfesionalRepository tipoProfesionalRepository;
+
+    // Busca el tipo de profesional elegido y verifica que exista y no esté dado de baja
+    private TipoProfesional buscarTipoProfesional(Long id) {
+        TipoProfesional tipo = tipoProfesionalRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "El tipo de profesional elegido no existe"));
+        if (tipo.getEstado() == Estado.INACTIVO) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El tipo de profesional elegido ya no está disponible");
+        }
+        return tipo;
+    }
 
     @PostMapping("/registro")
     @Transactional // Esto asegura que si algo falla, no se guarde nada por la mitad
@@ -70,17 +85,18 @@ public class ProfesionalController {
         usuario.setNombreUsuario(dto.getNombreUsuario());
         usuario.setContrasena(passwordEncoder.encode(dto.getContrasena()));
         usuario.setRol(Rol.PROFESIONAL); // Le asigno el rol automáticamente
-        usuario.setEstado(true); // Lo dejo activo por defecto
+        usuario.setEstado(Estado.ACTIVO); // Lo dejo activo por defecto
         usuario.setPersona(persona); //  hago la relación fk_persona
         usuario = usuarioRepository.save(usuario);
 
         //  Creo y guardo el Profesional (Lo vinculo con Persona y Usuario)
         Profesional profesional = new Profesional();
-        profesional.setTipoProfesional(dto.getTipoProfesional());
-        profesional.setExperiencia(dto.getExperiencia());
+        profesional.setTipoProfesional(buscarTipoProfesional(dto.getTipoProfesionalId()));
+        profesional.setAniosExperiencia(dto.getAniosExperiencia());
+        profesional.setDescripcionExperiencia(dto.getDescripcionExperiencia());
         profesional.setDisponibilidad(dto.getDisponibilidad());
         profesional.setMatricula(dto.getMatricula());
-        profesional.setEstado(true);
+        profesional.setEstado(Estado.ACTIVO);
         profesional.setPersona(persona); //  relación fk_persona
         profesional.setUsuario(usuario); //  la relación fk_usuario
 
@@ -90,7 +106,7 @@ public class ProfesionalController {
     }
     @GetMapping
     public List<Profesional> obtenerTodos() {
-        return profesionalRepository.findByEstadoTrue(); // solo los profesionales activos
+        return profesionalRepository.findByEstado(Estado.ACTIVO); // solo los profesionales activos
     }
 
     // Baja lógica de un profesional: lo puede hacer el propio profesional o un administrador.
@@ -105,13 +121,13 @@ public class ProfesionalController {
         if (!esElMismo && !Permisos.esAdministrador(authentication)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podés dar de baja a otra persona");
         }
-        if (!profesional.isEstado()) {
+        if (profesional.getEstado() == Estado.INACTIVO) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El profesional ya está dado de baja");
         }
 
         // 1. Baja del perfil y del usuario
-        profesional.setEstado(false);
-        profesional.getUsuario().setEstado(false);
+        profesional.setEstado(Estado.INACTIVO);
+        profesional.getUsuario().setEstado(Estado.INACTIVO);
         usuarioRepository.save(profesional.getUsuario());
 
         // 2. Se cancelan sus postulaciones pendientes y sus inscripciones vigentes
@@ -168,8 +184,9 @@ public class ProfesionalController {
         profesional.getPersona().setLocalidad(dto.getLocalidad());
 
         // 4. Actualizamos los datos propios del profesional
-        profesional.setTipoProfesional(dto.getTipoProfesional());
-        profesional.setExperiencia(dto.getExperiencia());
+        profesional.setTipoProfesional(buscarTipoProfesional(dto.getTipoProfesionalId()));
+        profesional.setAniosExperiencia(dto.getAniosExperiencia());
+        profesional.setDescripcionExperiencia(dto.getDescripcionExperiencia());
         profesional.setDisponibilidad(dto.getDisponibilidad());
         profesional.setMatricula(dto.getMatricula());
 

@@ -1,4 +1,5 @@
 package com.acompanAR.backend.controller;
+import com.acompanAR.backend.entity.Estado;
 import com.acompanAR.backend.dto.EmpleadorEdicionDTO;
 import com.acompanAR.backend.dto.EmpleadorRegistroDTO;
 import com.acompanAR.backend.entity.Empleador;
@@ -62,7 +63,7 @@ public class EmpleadorController {
         // para encriptar la contraseña
         usuario.setContrasena(passwordEncoder.encode(dto.getContrasena()));
         usuario.setRol(Rol.EMPLEADOR); // Le asignamos el rol correspondiente
-        usuario.setEstado(true);
+        usuario.setEstado(Estado.ACTIVO);
         usuario.setPersona(persona);
         usuario = usuarioRepository.save(usuario);
 
@@ -80,7 +81,7 @@ public class EmpleadorController {
     // Listado de empleadores
     @GetMapping
     public List<Empleador> obtenerTodos() {
-        return empleadorRepository.findByEstadoTrue(); // solo los empleadores activos
+        return empleadorRepository.findByEstado(Estado.ACTIVO); // solo los empleadores activos
     }
 
     // Baja lógica de un empleador: lo puede hacer el propio empleador o un administrador.
@@ -95,18 +96,18 @@ public class EmpleadorController {
         if (!esElMismo && !Permisos.esAdministrador(authentication)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podés dar de baja a otra persona");
         }
-        if (!empleador.isEstado()) {
+        if (empleador.getEstado() == Estado.INACTIVO) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El empleador ya está dado de baja");
         }
 
         // 1. Baja del perfil y del usuario
-        empleador.setEstado(false);
-        empleador.getUsuario().setEstado(false);
+        empleador.setEstado(Estado.INACTIVO);
+        empleador.getUsuario().setEstado(Estado.INACTIVO);
         usuarioRepository.save(empleador.getUsuario());
 
         // 2. Se dan de baja sus ofertas activas y se rechazan las postulaciones que seguían pendientes
-        for (OfertaLaboral oferta : ofertaLaboralRepository.findByEmpleadorIdAndActivaTrue(id)) {
-            oferta.setActiva(false);
+        for (OfertaLaboral oferta : ofertaLaboralRepository.findByEmpleadorIdAndEstado(id, Estado.ACTIVO)) {
+            oferta.setEstado(Estado.INACTIVO);
             ofertaLaboralRepository.save(oferta);
             for (Postulacion postulacion : postulacionRepository.findByOfertaLaboralId(oferta.getId())) {
                 if (postulacion.getEstado() == EstadoPostulacion.PENDIENTE) {
