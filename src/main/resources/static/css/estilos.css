@@ -329,3 +329,84 @@ textarea {
 
 .estado-CONFIRMADA { color: #8a5a00; background: #fff3d6; }
 .estado-FINALIZADA { color: var(--verde-oscuro); background: var(--ok-fondo); }
+
+/* ---------- Panel de inicio ---------- */
+.resumen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.dato {
+    background: white;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 18px 20px;
+}
+
+.dato .numero {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--verde-oscuro);
+}
+
+.dato .rotulo {
+    margin-top: 4px;
+    font-size: 0.9rem;
+    color: var(--gris);
+}
+
+.aviso {
+    padding: 14px 18px;
+    margin-bottom: 12px;
+    border: 1px solid;
+    border-radius: 12px;
+}
+
+.aviso p {
+    margin: 0 0 4px;
+}
+
+.aviso p:last-child {
+    margin-bottom: 0;
+}
+
+.aviso a {
+    font-weight: 600;
+}
+
+.aviso-ok {
+    color: var(--verde-oscuro);
+    background: var(--ok-fondo);
+    border-color: #b9dfc6;
+}
+
+.aviso-atencion {
+    color: #6b4500;
+    background: #fff3d6;
+    border-color: #f0d99a;
+}
+
+.seccion {
+    margin-top: 28px;
+}
+
+.seccion-titulo {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.seccion-titulo h2 {
+    margin: 0;
+}
+
+.columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+}

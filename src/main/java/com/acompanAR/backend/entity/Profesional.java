@@ -20,7 +20,8 @@ public class Profesional {
     private String disponibilidad;
 
     // La matrícula tiene como máximo 20 caracteres (también se valida en los DTOs)
-    @Column(length = 20)
+    // Es única: dos profesionales no pueden tener el mismo número (puede quedar vacía/null)
+    @Column(length = 20, unique = true)
     private String matricula;
 
     // Baja lógica: un profesional dado de baja queda INACTIVO

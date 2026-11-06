@@ -15,50 +15,289 @@
     </header>
 
     <main class="contenedor">
-        <div class="tarjeta">
+        <div class="cabecera-pagina">
             <h1 id="saludo">Cargando...</h1>
             <p><span class="etiqueta-rol" id="rol"></span></p>
             <p class="subtitulo" id="descripcion"></p>
             <div class="botones" id="accesos" style="justify-content: flex-start;"></div>
         </div>
+
+        <div id="mensaje" class="mensaje"></div>
+        <div id="panel"></div>
     </main>
 
     <script src="js/api.js"></script>
     <script>
         armarMenu();
 
+        const panel = document.getElementById("panel");
+        const mensaje = document.getElementById("mensaje");
+
+        // ---------- Piezas que se repiten en los tres paneles ----------
+
+        // Pide una lista a la API; si falla, devuelve una lista vacía (el panel se muestra igual)
+        async function pedirLista(url) {
+            const resultado = await pedir(url);
+            return resultado.ok && Array.isArray(resultado.datos) ? resultado.datos : [];
+        }
+
+        // Fila de tarjetas con números. datos = [{ numero, rotulo }]
+        function resumen(datos) {
+            const fila = crear("div", "resumen");
+            datos.forEach(function (d) {
+                const tarjeta = crear("div", "dato");
+                tarjeta.appendChild(crear("div", "numero", String(d.numero)));
+                tarjeta.appendChild(crear("div", "rotulo", d.rotulo));
+                fila.appendChild(tarjeta);
+            });
+            return fila;
+        }
+
+        // Cartel de aviso. tipo: "ok" (verde) o "atencion" (amarillo). enlace es opcional: { texto, url }
+        function aviso(tipo, titulo, detalle, enlace) {
+            const caja = crear("div", "aviso aviso-" + tipo);
+            caja.appendChild(crear("p", "", titulo)).style.fontWeight = "600";
+            if (detalle) caja.appendChild(crear("p", "", detalle));
+            if (enlace) caja.appendChild(crear("a", "", enlace.texto, { href: enlace.url }));
+            return caja;
+        }
+
+        // Sección con título y un enlace "Ver todas". Devuelve el elemento donde se agregan las tarjetas.
+        function seccion(contenedor, titulo, enlace) {
+            const bloque = crear("div", "seccion");
+            const cabecera = crear("div", "seccion-titulo");
+            cabecera.appendChild(crear("h2", "", titulo));
+            if (enlace) cabecera.appendChild(crear("a", "", enlace.texto, { href: enlace.url }));
+            const lista = crear("div", "lista");
+            bloque.appendChild(cabecera);
+            bloque.appendChild(lista);
+            contenedor.appendChild(bloque);
+            return lista;
+        }
+
+        function textoVacio(lista, texto) {
+            lista.appendChild(crear("p", "vacio", texto));
+        }
+
+        function primeraMayuscula(texto) {
+            return texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : texto;
+        }
+
+        // ================= PROFESIONAL =================
+        async function panelProfesional(usuario) {
+            const idProf = usuario.idProfesional;
+            const respuestas = await Promise.all([
+                pedirLista("/api/postulaciones/profesional/" + idProf),
+                pedirLista("/api/inscripciones/profesional/" + idProf),
+                pedirLista("/api/ofertas"),
+                pedirLista("/api/capacitaciones"),
+                pedir("/api/profesionales/" + idProf)
+            ]);
+            const postulaciones = respuestas[0];
+            const inscripciones = respuestas[1];
+            const ofertas = respuestas[2];
+            const capacitaciones = respuestas[3];
+            const perfil = respuestas[4].ok ? respuestas[4].datos : null;
+
+            const contar = function (lista, estado) {
+                return lista.filter(function (x) { return x.estado === estado; }).length;
+            };
+            panel.appendChild(resumen([
+                { numero: contar(postulaciones, "PENDIENTE"), rotulo: "Postulaciones pendientes" },
+                { numero: contar(postulaciones, "ACEPTADA"), rotulo: "Postulaciones aceptadas" },
+                { numero: contar(inscripciones, "CONFIRMADA"), rotulo: "Capacitaciones en curso" },
+                { numero: contar(inscripciones, "FINALIZADA"), rotulo: "Capacitaciones finalizadas" }
+            ]));
+
+            // Avisos importantes: primero los empleadores que te aceptaron
+            postulaciones.filter(function (p) { return p.estado === "ACEPTADA"; }).slice(0, 3).forEach(function (p) {
+                const oferta = p.ofertaLaboral;
+                const empleador = oferta.empleador;
+                let detalle = empleador ? empleador.nombreEmpresa : "";
+                if (empleador && empleador.persona) {
+                    const c = empleador.persona;
+                    detalle += " · Contacto: " + c.nombre + " " + c.apellido + " · " + c.telefono;
+                }
+                panel.appendChild(aviso("ok", "¡Te aceptaron en \"" + oferta.titulo + "\"!", detalle,
+                    { texto: "Ver mis postulaciones", url: "mis-postulaciones.html" }));
+            });
+
+            // Perfil incompleto
+            if (perfil && (!perfil.matricula || !perfil.descripcionExperiencia || !perfil.disponibilidad)) {
+                panel.appendChild(aviso("atencion", "Completá tu perfil",
+                    "Los empleadores ven tu matrícula, tu disponibilidad y la descripción de tu experiencia antes de aceptarte.",
+                    { texto: "Ir a Mi perfil", url: "perfil.html" }));
+            }
+
+            const columnas = crear("div", "columnas");
+            panel.appendChild(columnas);
+
+            // Ofertas recientes (las más nuevas a las que todavía no te postulaste)
+            const yaPostulado = new Set(postulaciones.map(function (p) { return p.ofertaLaboral.id; }));
+            const recientes = ofertas
+                .filter(function (o) { return !yaPostulado.has(o.id); })
+                .sort(function (a, b) { return (b.fechaPublicacion || "").localeCompare(a.fechaPublicacion || "") || b.id - a.id; })
+                .slice(0, 3);
+            const listaOfertas = seccion(columnas, "Ofertas recientes", { texto: "Ver todas", url: "ofertas.html" });
+            if (recientes.length === 0) textoVacio(listaOfertas, "No hay ofertas nuevas para vos por ahora.");
+            recientes.forEach(function (oferta) {
+                const tarjeta = crear("div", "tarjeta item");
+                const info = crear("div");
+                info.appendChild(crear("h2", "", oferta.titulo));
+                const empresa = oferta.empleador ? oferta.empleador.nombreEmpresa : "";
+                info.appendChild(crear("p", "detalle", empresa + " · " + formatearFecha(oferta.fechaPublicacion)));
+                const boton = crear("button", "boton boton-chico", "Postularme");
+                boton.addEventListener("click", async function () {
+                    boton.disabled = true;
+                    const resultado = await pedir("/api/postulaciones/nueva", "POST",
+                        { idProfesional: idProf, idOfertaLaboral: oferta.id });
+                    if (resultado.ok) {
+                        boton.textContent = "Ya te postulaste";
+                        mostrarMensaje(mensaje, "¡Postulación enviada! Podés seguirla en \"Mis postulaciones\".", "ok");
+                    } else {
+                        boton.disabled = false;
+                        mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo enviar la postulación."), "error");
+                    }
+                });
+                tarjeta.appendChild(info);
+                tarjeta.appendChild(boton);
+                listaOfertas.appendChild(tarjeta);
+            });
+
+            // Próximas capacitaciones (las que todavía no empezaron y en las que no estás inscripto)
+            const hoy = new Date().toISOString().slice(0, 10);
+            const inscripto = new Set(inscripciones
+                .filter(function (i) { return i.estado !== "CANCELADA"; })
+                .map(function (i) { return i.capacitacion.id; }));
+            const proximas = capacitaciones
+                .filter(function (c) { return !inscripto.has(c.id) && (c.fechaInicio || "") >= hoy; })
+                .sort(function (a, b) { return a.fechaInicio.localeCompare(b.fechaInicio); })
+                .slice(0, 3);
+            const listaCaps = seccion(columnas, "Próximas capacitaciones", { texto: "Ver todas", url: "capacitaciones.html" });
+            if (proximas.length === 0) textoVacio(listaCaps, "No hay capacitaciones próximas disponibles.");
+            proximas.forEach(function (cap) {
+                const tarjeta = crear("div", "tarjeta item");
+                const info = crear("div");
+                info.appendChild(crear("h2", "", cap.titulo));
+                info.appendChild(crear("p", "detalle",
+                    cap.institucion.nombre + " · " + cap.cargaHoraria + " hs · Comienza el " + formatearFecha(cap.fechaInicio)));
+                tarjeta.appendChild(info);
+                tarjeta.appendChild(crear("a", "boton boton-chico boton-secundario", "Ver", { href: "capacitaciones.html" }));
+                listaCaps.appendChild(tarjeta);
+            });
+        }
+
+        // ================= EMPLEADOR =================
+        async function panelEmpleador(usuario) {
+            const ofertas = await pedirLista("/api/ofertas/empleador/" + usuario.idEmpleador);
+            // Postulaciones de cada oferta (una consulta por oferta, todas juntas)
+            const porOferta = await Promise.all(ofertas.map(function (o) {
+                return pedirLista("/api/postulaciones/oferta/" + o.id);
+            }));
+
+            let sinResponder = 0, aceptadas = 0;
+            porOferta.forEach(function (lista) {
+                sinResponder += lista.filter(function (p) { return p.estado === "PENDIENTE"; }).length;
+                aceptadas += lista.filter(function (p) { return p.estado === "ACEPTADA"; }).length;
+            });
+
+            panel.appendChild(resumen([
+                { numero: ofertas.length, rotulo: "Ofertas activas" },
+                { numero: sinResponder, rotulo: "Postulantes sin responder" },
+                { numero: aceptadas, rotulo: "Postulantes aceptados" }
+            ]));
+
+            if (sinResponder > 0) {
+                panel.appendChild(aviso("atencion",
+                    "Tenés " + sinResponder + (sinResponder === 1 ? " postulante" : " postulantes") + " esperando tu respuesta",
+                    "Entrá a cada oferta para aceptar o rechazar."));
+            }
+
+            const lista = seccion(panel, "Tus ofertas", { texto: "Publicar nueva oferta", url: "oferta-form.html" });
+            if (ofertas.length === 0) textoVacio(lista, "Todavía no publicaste ninguna oferta.");
+            ofertas.forEach(function (oferta, i) {
+                const postulaciones = porOferta[i];
+                const pendientes = postulaciones.filter(function (p) { return p.estado === "PENDIENTE"; }).length;
+                const tarjeta = crear("div", "tarjeta item");
+                const info = crear("div");
+                info.appendChild(crear("h2", "", oferta.titulo));
+                info.appendChild(crear("p", "detalle",
+                    postulaciones.length + (postulaciones.length === 1 ? " postulante" : " postulantes") +
+                    " · " + pendientes + " sin responder · Publicada el " + formatearFecha(oferta.fechaPublicacion)));
+                tarjeta.appendChild(info);
+                tarjeta.appendChild(crear("a", "boton boton-chico", "Ver postulantes", { href: "postulantes.html?oferta=" + oferta.id }));
+                lista.appendChild(tarjeta);
+            });
+        }
+
+        // ================= ADMINISTRADOR =================
+        async function panelAdministrador() {
+            const respuestas = await Promise.all([
+                pedirLista("/api/capacitaciones"),
+                pedirLista("/api/instituciones"),
+                pedirLista("/api/profesionales"),
+                pedirLista("/api/empleadores")
+            ]);
+            panel.appendChild(resumen([
+                { numero: respuestas[0].length, rotulo: "Capacitaciones activas" },
+                { numero: respuestas[1].length, rotulo: "Instituciones" },
+                { numero: respuestas[2].length, rotulo: "Profesionales registrados" },
+                { numero: respuestas[3].length, rotulo: "Empleadores registrados" }
+            ]));
+
+            const hoy = new Date().toISOString().slice(0, 10);
+            const proximas = respuestas[0]
+                .filter(function (c) { return (c.fechaInicio || "") >= hoy; })
+                .sort(function (a, b) { return a.fechaInicio.localeCompare(b.fechaInicio); })
+                .slice(0, 3);
+            const lista = seccion(panel, "Próximas capacitaciones", { texto: "Administrar", url: "admin-capacitaciones.html" });
+            if (proximas.length === 0) textoVacio(lista, "No hay capacitaciones próximas. ¡Publicá una!");
+            proximas.forEach(function (cap) {
+                const tarjeta = crear("div", "tarjeta item");
+                const info = crear("div");
+                info.appendChild(crear("h2", "", cap.titulo));
+                info.appendChild(crear("p", "detalle",
+                    cap.institucion.nombre + " · " + cap.cargaHoraria + " hs · Comienza el " + formatearFecha(cap.fechaInicio)));
+                tarjeta.appendChild(info);
+                tarjeta.appendChild(crear("a", "boton boton-chico boton-secundario", "Editar", { href: "capacitacion-form.html?id=" + cap.id }));
+                lista.appendChild(tarjeta);
+            });
+        }
+
+        // ================= Arranque =================
         // Esta página exige sesión: si no hay, requerirSesion() manda al login
-        requerirSesion().then(function (usuario) {
+        requerirSesion().then(async function (usuario) {
             if (usuario === null) return;
 
             const nombre = usuario.nombre ? usuario.nombre : usuario.nombreUsuario;
-            document.getElementById("saludo").textContent = "Hola, " + nombre;
+            document.getElementById("saludo").textContent = "Hola, " + primeraMayuscula(nombre);
             document.getElementById("rol").textContent = usuario.rol;
 
             const textos = {
-                PROFESIONAL: "Acá vas a poder ver ofertas laborales, postularte y inscribirte a capacitaciones.",
-                EMPLEADOR: "Acá vas a poder publicar ofertas laborales y responder a las postulaciones.",
-                ADMINISTRADOR: "Acá vas a poder publicar y administrar capacitaciones."
+                PROFESIONAL: "Mirá cómo van tus postulaciones y qué hay de nuevo.",
+                EMPLEADOR: "Mirá cómo van tus ofertas y quiénes se postularon.",
+                ADMINISTRADOR: "Resumen general de la plataforma."
             };
             document.getElementById("descripcion").textContent = textos[usuario.rol] || "";
 
             // Botones de acceso rápido según el rol
+            const accesos = document.getElementById("accesos");
             if (usuario.rol === "EMPLEADOR") {
-                const accesos = document.getElementById("accesos");
                 accesos.appendChild(crear("a", "boton", "Publicar oferta", { href: "oferta-form.html" }));
                 accesos.appendChild(crear("a", "boton boton-secundario", "Mis ofertas", { href: "mis-ofertas.html" }));
+                await panelEmpleador(usuario);
             }
             if (usuario.rol === "PROFESIONAL") {
-                const accesos = document.getElementById("accesos");
                 accesos.appendChild(crear("a", "boton", "Ver ofertas", { href: "ofertas.html" }));
                 accesos.appendChild(crear("a", "boton boton-secundario", "Mis postulaciones", { href: "mis-postulaciones.html" }));
                 accesos.appendChild(crear("a", "boton boton-secundario", "Capacitaciones", { href: "capacitaciones.html" }));
+                await panelProfesional(usuario);
             }
             if (usuario.rol === "ADMINISTRADOR") {
-                const accesos = document.getElementById("accesos");
                 accesos.appendChild(crear("a", "boton", "Nueva capacitación", { href: "capacitacion-form.html" }));
                 accesos.appendChild(crear("a", "boton boton-secundario", "Administrar capacitaciones", { href: "admin-capacitaciones.html" }));
                 accesos.appendChild(crear("a", "boton boton-secundario", "Instituciones y tipos", { href: "admin-catalogos.html" }));
+                await panelAdministrador();
             }
         });
     </script>

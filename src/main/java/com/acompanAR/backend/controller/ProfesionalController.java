@@ -52,6 +52,15 @@ public class ProfesionalController {
     @Autowired
     private TipoProfesionalRepository tipoProfesionalRepository;
 
+    // Saca los espacios de la matrícula y devuelve null si quedó vacía.
+    // (Importante: varias matrículas vacías "" chocarían entre sí; con null no hay problema.)
+    private String normalizarMatricula(String matricula) {
+        if (matricula == null || matricula.isBlank()) {
+            return null;
+        }
+        return matricula.trim();
+    }
+
     // Busca el tipo de profesional elegido y verifica que exista y no esté dado de baja
     private TipoProfesional buscarTipoProfesional(Long id) {
         TipoProfesional tipo = tipoProfesionalRepository.findById(id)
@@ -70,6 +79,13 @@ public class ProfesionalController {
         if (usuarioRepository.existsByNombreUsuario(dto.getNombreUsuario())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "El nombre de usuario '" + dto.getNombreUsuario() + "' ya está en uso. Elegí otro.");
+        }
+
+        // La matrícula (si la cargó) no puede estar en uso por otro profesional
+        String matricula = normalizarMatricula(dto.getMatricula());
+        if (matricula != null && profesionalRepository.existsByMatriculaIgnoreCase(matricula)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "La matrícula '" + matricula + "' ya está registrada por otro profesional.");
         }
 
         // Creo y guardo la Persona
@@ -95,7 +111,7 @@ public class ProfesionalController {
         profesional.setAniosExperiencia(dto.getAniosExperiencia());
         profesional.setDescripcionExperiencia(dto.getDescripcionExperiencia());
         profesional.setDisponibilidad(dto.getDisponibilidad());
-        profesional.setMatricula(dto.getMatricula());
+        profesional.setMatricula(matricula);
         profesional.setEstado(Estado.ACTIVO);
         profesional.setPersona(persona); //  relación fk_persona
         profesional.setUsuario(usuario); //  la relación fk_usuario
@@ -177,7 +193,14 @@ public class ProfesionalController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podés modificar el perfil de otra persona");
         }
 
-        // 3. Actualizamos los datos personales (no tocamos el usuario ni la contraseña acá)
+        // 3. La matrícula no puede ser la de otro profesional (la propia sí, si no la cambió)
+        String matricula = normalizarMatricula(dto.getMatricula());
+        if (matricula != null && profesionalRepository.existsByMatriculaIgnoreCaseAndIdNot(matricula, id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "La matrícula '" + matricula + "' ya está registrada por otro profesional.");
+        }
+
+        // 3b. Actualizamos los datos personales (no tocamos el usuario ni la contraseña acá)
         profesional.getPersona().setNombre(dto.getNombre());
         profesional.getPersona().setApellido(dto.getApellido());
         profesional.getPersona().setTelefono(dto.getTelefono());
@@ -188,7 +211,7 @@ public class ProfesionalController {
         profesional.setAniosExperiencia(dto.getAniosExperiencia());
         profesional.setDescripcionExperiencia(dto.getDescripcionExperiencia());
         profesional.setDisponibilidad(dto.getDisponibilidad());
-        profesional.setMatricula(dto.getMatricula());
+        profesional.setMatricula(matricula);
 
         // 5. Guardamos los cambios
         return profesionalRepository.save(profesional);
