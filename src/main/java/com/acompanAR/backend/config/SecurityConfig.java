@@ -89,6 +89,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/instituciones/nueva").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/instituciones/editar/**", "/api/instituciones/baja/**").hasRole("ADMINISTRADOR")
 
+                        // ---- Calificación mutua: la hacen profesional y empleador; la moderación, el admin ----
+                        .requestMatchers(HttpMethod.POST, "/api/calificaciones/nueva").hasAnyRole("PROFESIONAL", "EMPLEADOR")
+                        .requestMatchers(HttpMethod.GET, "/api/calificaciones/mias").hasAnyRole("PROFESIONAL", "EMPLEADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/calificaciones/baja/**").hasRole("ADMINISTRADOR")
+
                         // ---- Consulta del listado de profesionales: empleadores y admin ----
                         .requestMatchers(HttpMethod.GET, "/api/profesionales").hasAnyRole("EMPLEADOR", "ADMINISTRADOR")
 

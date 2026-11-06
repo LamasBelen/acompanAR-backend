@@ -180,3 +180,83 @@ function formatearFecha(fecha) {
     const partes = fecha.split("-");
     return partes[2] + "/" + partes[1] + "/" + partes[0];
 }
+
+// ------------------------------------------
+// Calificación mutua (profesional <-> empleador)
+// ------------------------------------------
+
+// Ids de las postulaciones que el usuario logueado ya calificó
+async function cargarCalificacionesHechas() {
+    const resultado = await pedir("/api/calificaciones/mias");
+    return new Set(resultado.ok ? resultado.datos : []);
+}
+
+// Reputación de un usuario: { promedio, cantidad, calificaciones }
+async function obtenerReputacion(idUsuario) {
+    const resultado = await pedir("/api/calificaciones/usuario/" + idUsuario);
+    return resultado.ok ? resultado.datos : null;
+}
+
+// Texto corto: "★ 4.5 (3 calificaciones)"
+function textoReputacion(reputacion) {
+    if (!reputacion || reputacion.cantidad === 0) return "Sin calificaciones todavía";
+    return "★ " + reputacion.promedio.toFixed(1) + " (" + reputacion.cantidad +
+        (reputacion.cantidad === 1 ? " calificación)" : " calificaciones)");
+}
+
+// Arma el formulario para calificar una postulación aceptada.
+// alTerminar se ejecuta cuando la calificación se guardó bien (para recargar la lista).
+function armarFormularioCalificacion(idPostulacion, alTerminar) {
+    const formulario = crear("form", "calificar");
+
+    formulario.appendChild(crear("label", "", "Puntaje"));
+    const puntaje = crear("select");
+    llenarSelect(puntaje, [
+        { valor: 5, texto: "5 - Excelente" },
+        { valor: 4, texto: "4 - Muy bueno" },
+        { valor: 3, texto: "3 - Bueno" },
+        { valor: 2, texto: "2 - Regular" },
+        { valor: 1, texto: "1 - Malo" }
+    ]);
+    formulario.appendChild(puntaje);
+
+    formulario.appendChild(crear("label", "", "Comentario (opcional)"));
+    const comentario = crear("textarea", "", "", { maxlength: "500" });
+    formulario.appendChild(comentario);
+
+    const aviso = crear("div", "mensaje");
+    const enviar = crear("button", "boton boton-chico", "Enviar calificación", { type: "submit" });
+    formulario.appendChild(enviar);
+    formulario.appendChild(aviso);
+
+    formulario.addEventListener("submit", async function (evento) {
+        evento.preventDefault();
+        enviar.disabled = true;
+        const resultado = await pedir("/api/calificaciones/nueva", "POST", {
+            idPostulacion: idPostulacion,
+            puntaje: parseInt(puntaje.value, 10),
+            comentario: comentario.value
+        });
+        if (resultado.ok) {
+            alTerminar();
+        } else {
+            enviar.disabled = false;
+            mostrarMensaje(aviso, mensajeDeError(resultado, "No se pudo guardar la calificación."), "error");
+        }
+    });
+    return formulario;
+}
+
+// Muestra las calificaciones recibidas dentro de un contenedor (se usa en el perfil)
+function mostrarCalificacionesRecibidas(contenedor, reputacion) {
+    contenedor.innerHTML = "";
+    contenedor.appendChild(crear("p", "reputacion", textoReputacion(reputacion)));
+    if (!reputacion || reputacion.cantidad === 0) return;
+    reputacion.calificaciones.forEach(function (c) {
+        const bloque = crear("div", "comentario");
+        bloque.appendChild(crear("p", "detalle",
+            "★ " + c.puntaje + " · " + c.nombreAutor + " · " + c.tituloOferta + " · " + formatearFecha(c.fecha)));
+        if (c.comentario) bloque.appendChild(crear("p", "", c.comentario));
+        contenedor.appendChild(bloque);
+    });
+}

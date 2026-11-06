@@ -33,6 +33,7 @@
         const idOferta = new URLSearchParams(window.location.search).get("oferta");
         const lista = document.getElementById("lista");
         const mensaje = document.getElementById("mensaje");
+        let calificadas = new Set(); // postulaciones que ya calificó este empleador
 
         async function cargar() {
             await cargarLocalidades(); // para mostrar "Río Grande" en vez de "RIO_GRANDE"
@@ -44,6 +45,7 @@
                 return;
             }
 
+            calificadas = await cargarCalificacionesHechas();
             const resultado = await pedir("/api/postulaciones/oferta/" + idOferta);
             if (!resultado.ok) {
                 mostrarMensaje(mensaje, "No se pudieron cargar los postulantes de esta oferta.", "error");
@@ -89,6 +91,15 @@
                 info.appendChild(crear("p", "detalle", "Contacto: " + persona.telefono));
             }
 
+            // Reputación del profesional (se completa cuando llega la respuesta del servidor)
+            if (profesional.usuario) {
+                const reputacion = crear("p", "detalle", "Reputación: ...");
+                info.appendChild(reputacion);
+                obtenerReputacion(profesional.usuario.id).then(function (r) {
+                    reputacion.textContent = "Reputación: " + textoReputacion(r);
+                });
+            }
+
             const acciones = crear("div", "acciones");
             acciones.appendChild(crear("span", "estado estado-" + postulacion.estado, postulacion.estado));
 
@@ -100,6 +111,20 @@
                 rechazar.addEventListener("click", function () { responder(postulacion.id, "rechazar"); });
                 acciones.appendChild(aceptar);
                 acciones.appendChild(rechazar);
+            }
+
+            // Postulación aceptada: se puede calificar al profesional (una sola vez)
+            if (postulacion.estado === "ACEPTADA") {
+                if (calificadas.has(postulacion.id)) {
+                    acciones.appendChild(crear("span", "ya-calificado", "Ya calificaste ✓"));
+                } else {
+                    const calificar = crear("button", "boton boton-chico", "Calificar al profesional");
+                    calificar.addEventListener("click", function () {
+                        calificar.remove();
+                        info.appendChild(armarFormularioCalificacion(postulacion.id, cargar));
+                    });
+                    acciones.appendChild(calificar);
+                }
             }
 
             tarjeta.appendChild(info);

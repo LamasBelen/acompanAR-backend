@@ -31,6 +31,7 @@
         const lista = document.getElementById("lista");
         const mensaje = document.getElementById("mensaje");
         let usuario = null;
+        let calificadas = new Set(); // postulaciones que ya calificó este profesional
 
         async function cargar() {
             usuario = await requerirSesion();
@@ -41,6 +42,7 @@
                 return;
             }
 
+            calificadas = await cargarCalificacionesHechas();
             const resultado = await pedir("/api/postulaciones/profesional/" + usuario.idProfesional);
             if (!resultado.ok) {
                 mostrarMensaje(mensaje, "No se pudieron cargar tus postulaciones.", "error");
@@ -75,6 +77,15 @@
                     "¡Te aceptaron! Contacto: " + contacto.nombre + " " + contacto.apellido + " · " + contacto.telefono));
             }
 
+            // Reputación del empleador (se completa cuando llega la respuesta del servidor)
+            if (oferta.empleador && oferta.empleador.usuario) {
+                const reputacion = crear("p", "detalle", "Reputación del empleador: ...");
+                info.appendChild(reputacion);
+                obtenerReputacion(oferta.empleador.usuario.id).then(function (r) {
+                    reputacion.textContent = "Reputación del empleador: " + textoReputacion(r);
+                });
+            }
+
             const acciones = crear("div", "acciones");
             acciones.appendChild(crear("span", "estado estado-" + postulacion.estado, postulacion.estado));
 
@@ -83,6 +94,20 @@
                 const boton = crear("button", "boton boton-chico boton-peligro", "Cancelar");
                 boton.addEventListener("click", function () { cancelar(postulacion.id); });
                 acciones.appendChild(boton);
+            }
+
+            // Postulación aceptada: se puede calificar al empleador (una sola vez)
+            if (postulacion.estado === "ACEPTADA") {
+                if (calificadas.has(postulacion.id)) {
+                    acciones.appendChild(crear("span", "ya-calificado", "Ya calificaste ✓"));
+                } else {
+                    const calificar = crear("button", "boton boton-chico", "Calificar al empleador");
+                    calificar.addEventListener("click", function () {
+                        calificar.remove();
+                        info.appendChild(armarFormularioCalificacion(postulacion.id, cargar));
+                    });
+                    acciones.appendChild(calificar);
+                }
             }
 
             tarjeta.appendChild(info);

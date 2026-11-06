@@ -410,3 +410,25 @@ textarea {
     grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
     gap: 24px;
 }
+
+/* ---- Calificación mutua ---- */
+.reputacion {
+    font-weight: 600;
+    color: var(--verde-oscuro);
+}
+
+.calificar {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #cfd8dc;
+}
+
+.comentario {
+    padding: 10px 0;
+    border-top: 1px solid #eceff1;
+}
+
+.ya-calificado {
+    font-size: 0.9rem;
+    color: var(--verde-oscuro);
+}
