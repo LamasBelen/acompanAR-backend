@@ -83,6 +83,12 @@
             </form>
         </div>
 
+        <div class="tarjeta tarjeta-angosta" style="margin-top: 20px;" id="tarjetaReputacion">
+            <h2>Mi reputación</h2>
+            <p class="subtitulo">Lo que opinaron de vos las personas con las que trabajaste.</p>
+            <div id="reputacion"></div>
+        </div>
+
         <div class="tarjeta tarjeta-angosta" style="margin-top: 20px;">
             <h2>Dar de baja mi cuenta</h2>
             <p class="subtitulo">
@@ -110,8 +116,14 @@
                 mostrarMensaje(mensaje, "Esta pantalla es para profesionales y empleadores.", "error");
                 document.getElementById("formPerfil").style.display = "none";
                 document.getElementById("botonBaja").style.display = "none";
+                document.getElementById("tarjetaReputacion").style.display = "none";
                 return;
             }
+
+            // Reputación: promedio y comentarios que recibió este usuario
+            obtenerReputacion(usuario.id).then(function (reputacion) {
+                mostrarCalificacionesRecibidas(document.getElementById("reputacion"), reputacion);
+            });
 
             document.getElementById(esProfesional ? "camposProfesional" : "camposEmpleador").style.display = "block";
 
