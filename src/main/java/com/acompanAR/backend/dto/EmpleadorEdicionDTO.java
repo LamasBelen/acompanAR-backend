@@ -9,10 +9,10 @@ import jakarta.validation.constraints.NotBlank;
 // No incluye usuario ni contraseña: eso no se cambia desde acá.
 public class EmpleadorEdicionDTO {
     @NotBlank(message = "El nombre es obligatorio")
-    @Size(max = 100, message = "El nombre no puede superar los 100 caracteres")
+    @Size(max = 30, message = "El nombre no puede superar los 25 caracteres")
     private String nombre;
     @NotBlank(message = "El apellido es obligatorio")
-    @Size(max = 100, message = "El apellido no puede superar los 100 caracteres")
+    @Size(max = 30, message = "El apellido no puede superar los 100 caracteres")
     private String apellido;
     @NotBlank(message = "El telefono es obligatorio")
     @Size(max = 30, message = "El teléfono no puede superar los 30 caracteres")
@@ -21,7 +21,7 @@ public class EmpleadorEdicionDTO {
     private Localidad localidad;
 
     @NotBlank(message = "El nombre de la empresa es obligatorio")
-    @Size(max = 255, message = "El nombre de la empresa es demasiado largo")
+    @Size(max = 40, message = "El nombre de la empresa es demasiado largo")
     private String nombreEmpresa;
     @Size(max = 255, message = "La descripción no puede superar los 255 caracteres")
     private String descripcionPuesto; // opcional

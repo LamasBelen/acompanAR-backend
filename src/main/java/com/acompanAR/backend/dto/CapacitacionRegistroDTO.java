@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 public class CapacitacionRegistroDTO {
     @NotBlank (message = "El titulo de la capacitacion es obligatorio")
-    @Size(max = 255, message = "El título no puede superar los 255 caracteres")
+    @Size(max = 50, message = "El título no puede superar los 50 caracteres")
     private String titulo;
     @NotBlank (message = "La descripcion no puede estar vacia")
     @Size(max = 1000, message = "La descripción no puede superar los 1000 caracteres")

@@ -10,10 +10,10 @@ import jakarta.validation.constraints.NotBlank;
 public class EmpleadorRegistroDTO {
     //pongo los datos de la persona
     @NotBlank(message = "El nombre es obligatorio")
-    @Size(max = 100, message = "El nombre no puede superar los 100 caracteres")
+    @Size(max = 30, message = "El nombre no puede superar los 30 caracteres")
     private String nombre;
     @NotBlank(message = "El apellido es obligatorio")
-    @Size(max = 100, message = "El apellido no puede superar los 100 caracteres")
+    @Size(max = 30, message = "El apellido no puede superar los 20 caracteres")
     private String apellido;
     @NotBlank(message = "El teléfono es obligatorio")
     @Size(max = 30, message = "El teléfono no puede superar los 30 caracteres")
@@ -24,17 +24,17 @@ public class EmpleadorRegistroDTO {
     //Datos del  usuario
 
     @NotBlank(message = "El usuario es obligatorio")
-    @Size(min = 4, max = 30, message = "El usuario debe tener entre 4 y 30 caracteres")
+    @Size(min = 4, max = 20, message = "El usuario debe tener entre 4 y 20 caracteres")
     @Pattern(regexp = "^[A-Za-z0-9._-]+$", message = "El usuario solo puede tener letras, números, punto, guion y guion bajo")
     private String nombreUsuario;
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, max = 100, message = "La contraseña debe tener al menos 6 caracteres")
+    @Size(min = 6, max = 20, message = "La contraseña debe tener al menos 6 caracteres")
     private String contrasena;
 
     //datos del empleador
 
     @NotBlank(message = "El nombre de la empresa es obligatorio")
-    @Size(max = 255, message = "El nombre de la empresa es demasiado largo")
+    @Size(max = 40, message = "El nombre de la empresa es demasiado largo")
     private String nombreEmpresa;
     @Size(max = 255, message = "La descripción no puede superar los 255 caracteres")
     private String descripcionPuesto;
