@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis capacitaciones - acompanAR</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+    <header class="barra">
+        <div class="barra-contenido">
+            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <nav class="menu" id="menu"></nav>
+        </div>
+    </header>
+
+    <main class="contenedor">
+        <div class="cabecera-pagina">
+            <h1>Mis capacitaciones</h1>
+            <p class="subtitulo">Las capacitaciones en las que te inscribiste.</p>
+        </div>
+
+        <div id="mensaje" class="mensaje"></div>
+        <div id="lista" class="lista"></div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        armarMenu();
+
+        const lista = document.getElementById("lista");
+        const mensaje = document.getElementById("mensaje");
+
+        async function cargar() {
+            const usuario = await requerirSesion();
+            if (usuario === null) return;
+
+            if (usuario.rol !== "PROFESIONAL") {
+                mostrarMensaje(mensaje, "Esta pantalla es para profesionales.", "error");
+                return;
+            }
+
+            const resultado = await pedir("/api/inscripciones/profesional/" + usuario.idProfesional);
+            if (!resultado.ok) {
+                mostrarMensaje(mensaje, "No se pudieron cargar tus capacitaciones.", "error");
+                return;
+            }
+
+            lista.innerHTML = "";
+            if (resultado.datos.length === 0) {
+                const vacio = crear("p", "vacio", "Todavía no te inscribiste a ninguna capacitación. ");
+                vacio.appendChild(crear("a", "", "Ver capacitaciones", { href: "capacitaciones.html" }));
+                lista.appendChild(vacio);
+                return;
+            }
+            resultado.datos.forEach(function (inscripcion) {
+                lista.appendChild(armarTarjeta(inscripcion));
+            });
+        }
+
+        function armarTarjeta(inscripcion) {
+            const cap = inscripcion.capacitacion;
+            const tarjeta = crear("div", "tarjeta item");
+
+            const info = crear("div");
+            info.appendChild(crear("h2", "", cap.titulo));
+            info.appendChild(crear("p", "detalle",
+                cap.institucion.nombre + " · " + cap.cargaHoraria + " hs · Te inscribiste el " + formatearFecha(inscripcion.fechaInscripcion)));
+            const enlace = crearEnlaceSeguro(cap.linkVideo, "Ver material");
+            if (enlace !== null) {
+                const parrafo = crear("p", "detalle");
+                parrafo.appendChild(enlace);
+                info.appendChild(parrafo);
+            }
+
+            const acciones = crear("div", "acciones");
+            acciones.appendChild(crear("span", "estado estado-" + inscripcion.estado, inscripcion.estado));
+
+            // Solo una inscripción confirmada se puede finalizar o cancelar
+            if (inscripcion.estado === "CONFIRMADA") {
+                const finalizar = crear("button", "boton boton-chico", "Marcar como finalizada");
+                finalizar.addEventListener("click", function () { cambiar(inscripcion.id, "finalizar", "¿Marcar esta capacitación como finalizada?"); });
+                const cancelar = crear("button", "boton boton-chico boton-peligro", "Darme de baja");
+                cancelar.addEventListener("click", function () { cambiar(inscripcion.id, "cancelar", "¿Querés darte de baja de esta capacitación?"); });
+                acciones.appendChild(finalizar);
+                acciones.appendChild(cancelar);
+            }
+
+            tarjeta.appendChild(info);
+            tarjeta.appendChild(acciones);
+            return tarjeta;
+        }
+
+        // accion es "finalizar" o "cancelar" y coincide con el final de la URL del backend
+        async function cambiar(idInscripcion, accion, pregunta) {
+            if (!confirm(pregunta)) return;
+
+            const resultado = await pedir("/api/inscripciones/" + accion + "/" + idInscripcion, "PUT");
+            if (resultado.ok) {
+                cargar();
+            } else {
+                mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo actualizar la inscripción."), "error");
+            }
+        }
+
+        cargar();
+    </script>
+</body>
+</html>

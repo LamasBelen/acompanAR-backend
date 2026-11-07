@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capacitaciones - acompanAR</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+<header class="barra">
+    <div class="barra-contenido">
+        <a class="logo" href="index.html">acompan<span>AR</span></a>
+        <nav class="menu" id="menu"></nav>
+    </div>
+</header>
+
+<main class="contenedor">
+    <div class="cabecera-pagina">
+        <h1>Capacitaciones</h1>
+        <p class="subtitulo">Cursos para seguir formándote. Inscribite a los que te interesen.</p>
+    </div>
+
+    <div id="mensaje" class="mensaje"></div>
+    <div id="lista" class="lista"></div>
+</main>
+
+<script src="js/api.js"></script>
+<script>
+    armarMenu();
+
+    const lista = document.getElementById("lista");
+    const mensaje = document.getElementById("mensaje");
+    let usuario = null;
+
+    async function cargar() {
+        usuario = await requerirSesion();
+        if (usuario === null) return;
+
+        if (usuario.rol !== "PROFESIONAL") {
+            mostrarMensaje(mensaje, "Esta pantalla es para profesionales.", "error");
+            return;
+        }
+
+        const capacitaciones = await pedir("/api/capacitaciones");
+        const inscripciones = await pedir("/api/inscripciones/profesional/" + usuario.idProfesional);
+
+        if (!capacitaciones.ok) {
+            mostrarMensaje(mensaje, "No se pudieron cargar las capacitaciones.", "error");
+            return;
+        }
+
+        // Ids de las capacitaciones en las que ya estoy inscripto (las canceladas no cuentan)
+        const yaInscripto = new Set();
+        if (inscripciones.ok) {
+            inscripciones.datos.forEach(function (i) {
+                if (i.estado !== "CANCELADA") {
+                    yaInscripto.add(i.capacitacion.id);
+                }
+            });
+        }
+
+        lista.innerHTML = "";
+        if (capacitaciones.datos.length === 0) {
+            lista.appendChild(crear("p", "vacio", "Por ahora no hay capacitaciones disponibles."));
+            return;
+        }
+        capacitaciones.datos.forEach(function (cap) {
+            lista.appendChild(armarTarjeta(cap, yaInscripto.has(cap.id)));
+        });
+    }
+
+    function armarTarjeta(cap, inscripto) {
+        const tarjeta = crear("div", "tarjeta item");
+
+        const info = crear("div");
+        info.appendChild(crear("h2", "", cap.titulo));
+        info.appendChild(crear("p", "detalle",
+            cap.institucion + " · " + cap.cargaHoraria + " hs · Comienza el " + formatearFecha(cap.fechaInicio)));
+        info.appendChild(crear("p", "", cap.descripcion));
+        const enlace = crearEnlaceSeguro(cap.linkVideo, "Ver material");
+        if (enlace !== null) {
+            const parrafo = crear("p", "detalle");
+            parrafo.appendChild(enlace);
+            info.appendChild(parrafo);
+        }
+
+        const acciones = crear("div", "acciones");
+        const boton = crear("button", "boton boton-chico", inscripto ? "Ya estás inscripto" : "Inscribirme");
+        boton.disabled = inscripto;
+        boton.addEventListener("click", function () { inscribirse(cap.id, boton); });
+        acciones.appendChild(boton);
+
+        tarjeta.appendChild(info);
+        tarjeta.appendChild(acciones);
+        return tarjeta;
+    }
+
+    async function inscribirse(idCapacitacion, boton) {
+        boton.disabled = true;
+        const resultado = await pedir("/api/inscripciones/nueva", "POST", {
+            idProfesional: usuario.idProfesional,
+            idCapacitacion: idCapacitacion
+        });
+
+        if (resultado.ok) {
+            boton.textContent = "Ya estás inscripto";
+            mostrarMensaje(mensaje, "¡Inscripción confirmada! La encontrás en \"Mis capacitaciones\".", "ok");
+        } else if (resultado.status === 409) {
+            boton.textContent = "Ya estás inscripto";
+            mostrarMensaje(mensaje, "Ya estabas inscripto en esta capacitación.", "error");
+        } else {
+            boton.disabled = false;
+            mostrarMensaje(mensaje, "No se pudo completar la inscripción.", "error");
+        }
+    }
+
+    cargar();
+</script>
+</body>
+</html>
