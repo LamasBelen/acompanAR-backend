@@ -1,11 +1,12 @@
 package com.acompanAR.backend.entity;
+
 import jakarta.persistence.*;
+
+// Hereda de Perfil: id, estado, usuario y persona. Acá solo van los datos propios del profesional.
 @Entity
 @Table(name = "profesionales")
-public class Profesional {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Profesional extends Perfil {
+
     // El tipo de profesional está en su propia tabla (tipos_profesional)
     @ManyToOne
     @JoinColumn(name = "fk_tipo_profesional", nullable = false)
@@ -24,27 +25,9 @@ public class Profesional {
     @Column(length = 20, unique = true)
     private String matricula;
 
-    // Baja lógica: un profesional dado de baja queda INACTIVO
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Estado estado = Estado.ACTIVO;
-
-    //la relacion que tiene con fk_usuario
-    @OneToOne
-    @JoinColumn(name = "fk_usuario")
-    private Usuario usuario;
-    @OneToOne
-    @JoinColumn(name = "persona_id")
-    private Persona persona;
-
-
-    public Long getId() {
-        return id;
-
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    @Override
+    public Rol rolDelPerfil() {
+        return Rol.PROFESIONAL;
     }
 
     public TipoProfesional getTipoProfesional() {
@@ -86,28 +69,4 @@ public class Profesional {
     public void setMatricula(String matricula) {
         this.matricula = matricula;
     }
-
-    public Estado getEstado() {
-        return estado;
-    }
-
-    public void setEstado(Estado estado) {
-        this.estado = estado;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    public Persona getPersona() {
-        return persona;
-    }
-    public void setPersona(Persona persona){
-        this.persona = persona;
-    }
-
 }
