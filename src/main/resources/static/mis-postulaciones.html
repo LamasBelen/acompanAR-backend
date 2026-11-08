@@ -110,6 +110,10 @@
                 }
             }
 
+            if (oferta.empleador) {
+                agregarBotonDenuncia(acciones, info, "EMPLEADOR", oferta.empleador.id);
+            }
+
             tarjeta.appendChild(info);
             tarjeta.appendChild(acciones);
             return tarjeta;

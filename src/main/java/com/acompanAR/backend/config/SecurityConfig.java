@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/profesionales/registro").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/empleadores/registro").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/instituciones/registro").permitAll()
                         // Listas necesarias para el formulario de registro (localidades y tipos de profesional)
                         .requestMatchers(HttpMethod.GET, "/api/catalogos/**", "/api/tipos-profesional").permitAll()
 
@@ -79,15 +80,27 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/empleadores/editar/**").hasRole("EMPLEADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/empleadores/baja/**").hasAnyRole("EMPLEADOR", "ADMINISTRADOR")
 
-                        // ---- Solo ADMINISTRADOR (por ahora quien publica capacitaciones) ----
-                        .requestMatchers(HttpMethod.POST, "/api/capacitaciones/nueva").hasRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.PUT, "/api/capacitaciones/baja/**").hasRole("ADMINISTRADOR")
-                        .requestMatchers(HttpMethod.PUT, "/api/capacitaciones/editar/**").hasRole("ADMINISTRADOR")
+                        // ---- Capacitaciones: las publican las instituciones (las suyas) y el administrador (cualquiera).
+                        // El service verifica además que la institución esté VERIFICADA y que sea la dueña. ----
+                        .requestMatchers(HttpMethod.POST, "/api/capacitaciones/nueva").hasAnyRole("ADMINISTRADOR", "INSTITUCION")
+                        .requestMatchers(HttpMethod.PUT, "/api/capacitaciones/baja/**").hasAnyRole("ADMINISTRADOR", "INSTITUCION")
+                        .requestMatchers(HttpMethod.PUT, "/api/capacitaciones/editar/**").hasAnyRole("ADMINISTRADOR", "INSTITUCION")
+                        .requestMatchers(HttpMethod.GET, "/api/capacitaciones/mias").hasRole("INSTITUCION")
+
+                        // ---- Solo ADMINISTRADOR: catálogos y verificación de instituciones ----
 
                         .requestMatchers(HttpMethod.POST, "/api/tipos-profesional/nuevo").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/tipos-profesional/editar/**", "/api/tipos-profesional/baja/**").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.POST, "/api/instituciones/nueva").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/instituciones/editar/**", "/api/instituciones/baja/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/instituciones/verificar/**", "/api/instituciones/rechazar/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET, "/api/instituciones/todas").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET, "/api/instituciones/mia").hasRole("INSTITUCION")
+
+                        // ---- Denuncias: las hacen los usuarios de la comunidad; las atiende el administrador ----
+                        .requestMatchers(HttpMethod.POST, "/api/denuncias/nueva").hasAnyRole("PROFESIONAL", "EMPLEADOR", "INSTITUCION")
+                        .requestMatchers(HttpMethod.GET, "/api/denuncias").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/denuncias/resolver/**").hasRole("ADMINISTRADOR")
 
                         // ---- Calificación mutua: la hacen profesional y empleador; la moderación, el admin ----
                         .requestMatchers(HttpMethod.POST, "/api/calificaciones/nueva").hasAnyRole("PROFESIONAL", "EMPLEADOR")

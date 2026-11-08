@@ -230,20 +230,65 @@
             });
         }
 
+        // ================= INSTITUCION =================
+        async function panelInstitucion() {
+            const respuestas = await Promise.all([pedir("/api/instituciones/mia"), pedirLista("/api/capacitaciones/mias")]);
+            const institucion = respuestas[0].ok ? respuestas[0].datos : null;
+            const capacitaciones = respuestas[1];
+            const estado = institucion ? institucion.estadoVerificacion : null;
+
+            panel.appendChild(resumen([
+                { numero: capacitaciones.length, rotulo: "Capacitaciones publicadas" },
+                { numero: estado === "VERIFICADA" ? "Verificada" : estado === "PENDIENTE" ? "Pendiente" : "Rechazada",
+                  rotulo: "Estado de " + (institucion ? institucion.nombre : "tu institución") }
+            ]));
+
+            if (estado === "PENDIENTE") {
+                panel.appendChild(aviso("atencion", "Tu institución está pendiente de verificación",
+                    "El administrador tiene que aprobarla antes de que puedas publicar capacitaciones."));
+            } else if (estado === "RECHAZADA") {
+                panel.appendChild(aviso("atencion", "La solicitud de tu institución fue rechazada",
+                    "No podés publicar capacitaciones."));
+            }
+
+            const lista = seccion(panel, "Tus capacitaciones", estado === "VERIFICADA"
+                ? { texto: "Publicar nueva", url: "capacitacion-form.html" } : null);
+            if (capacitaciones.length === 0) textoVacio(lista, "Todavía no publicaste ninguna capacitación.");
+            capacitaciones.forEach(function (cap) {
+                const tarjeta = crear("div", "tarjeta item");
+                const info = crear("div");
+                info.appendChild(crear("h2", "", cap.titulo));
+                info.appendChild(crear("p", "detalle", cap.cargaHoraria + " hs · Comienza el " + formatearFecha(cap.fechaInicio)));
+                tarjeta.appendChild(info);
+                tarjeta.appendChild(crear("a", "boton boton-chico boton-secundario", "Editar", { href: "capacitacion-form.html?id=" + cap.id }));
+                lista.appendChild(tarjeta);
+            });
+        }
+
         // ================= ADMINISTRADOR =================
         async function panelAdministrador() {
             const respuestas = await Promise.all([
                 pedirLista("/api/capacitaciones"),
-                pedirLista("/api/instituciones"),
+                pedirLista("/api/instituciones/todas"),
                 pedirLista("/api/profesionales"),
-                pedirLista("/api/empleadores")
+                pedirLista("/api/empleadores"),
+                pedirLista("/api/denuncias?estado=PENDIENTE")
             ]);
+            const porVerificar = respuestas[1].filter(function (i) { return i.estadoVerificacion === "PENDIENTE"; }).length;
+            const denuncias = respuestas[4].length;
             panel.appendChild(resumen([
                 { numero: respuestas[0].length, rotulo: "Capacitaciones activas" },
                 { numero: respuestas[1].length, rotulo: "Instituciones" },
                 { numero: respuestas[2].length, rotulo: "Profesionales registrados" },
-                { numero: respuestas[3].length, rotulo: "Empleadores registrados" }
+                { numero: respuestas[3].length, rotulo: "Empleadores registrados" },
+                { numero: porVerificar, rotulo: "Instituciones por verificar" },
+                { numero: denuncias, rotulo: "Denuncias pendientes" }
             ]));
+            if (porVerificar > 0 || denuncias > 0) {
+                panel.appendChild(aviso("atencion", "Hay tareas de moderación pendientes",
+                    porVerificar + " institución(es) por verificar y " + denuncias + " denuncia(s) sin resolver.",
+                    { texto: "Ir a Moderación", url: "admin-moderacion.html" }));
+            }
 
             const hoy = new Date().toISOString().slice(0, 10);
             const proximas = respuestas[0]
@@ -276,6 +321,7 @@
             const textos = {
                 PROFESIONAL: "Mirá cómo van tus postulaciones y qué hay de nuevo.",
                 EMPLEADOR: "Mirá cómo van tus ofertas y quiénes se postularon.",
+                INSTITUCION: "Publicá y administrá las capacitaciones de tu institución.",
                 ADMINISTRADOR: "Resumen general de la plataforma."
             };
             document.getElementById("descripcion").textContent = textos[usuario.rol] || "";
@@ -293,7 +339,13 @@
                 accesos.appendChild(crear("a", "boton boton-secundario", "Capacitaciones", { href: "capacitaciones.html" }));
                 await panelProfesional(usuario);
             }
+            if (usuario.rol === "INSTITUCION") {
+                accesos.appendChild(crear("a", "boton", "Nueva capacitación", { href: "capacitacion-form.html" }));
+                accesos.appendChild(crear("a", "boton boton-secundario", "Mis capacitaciones", { href: "admin-capacitaciones.html" }));
+                await panelInstitucion();
+            }
             if (usuario.rol === "ADMINISTRADOR") {
+                accesos.appendChild(crear("a", "boton", "Moderación", { href: "admin-moderacion.html" }));
                 accesos.appendChild(crear("a", "boton", "Nueva capacitación", { href: "capacitacion-form.html" }));
                 accesos.appendChild(crear("a", "boton boton-secundario", "Administrar capacitaciones", { href: "admin-capacitaciones.html" }));
                 accesos.appendChild(crear("a", "boton boton-secundario", "Instituciones y tipos", { href: "admin-catalogos.html" }));

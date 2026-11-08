@@ -4,6 +4,7 @@ import com.acompanAR.backend.dto.CapacitacionRegistroDTO;
 import com.acompanAR.backend.entity.Capacitacion;
 import com.acompanAR.backend.service.CapacitacionService;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,8 +21,8 @@ public class CapacitacionController {
     }
 
     @PostMapping("/nueva")
-    public Capacitacion crearCapacitacion(@Valid @RequestBody CapacitacionRegistroDTO dto) {
-        return capacitacionService.crear(dto);
+    public Capacitacion crearCapacitacion(@Valid @RequestBody CapacitacionRegistroDTO dto, Authentication authentication) {
+        return capacitacionService.crear(dto, authentication);
     }
 
     // Solo devuelve las capacitaciones activas
@@ -30,19 +31,27 @@ public class CapacitacionController {
         return capacitacionService.listarActivas();
     }
 
+    // Las capacitaciones activas de la institución logueada
+    @GetMapping("/mias")
+    public List<Capacitacion> obtenerLasMias(Authentication authentication) {
+        return capacitacionService.listarDeLaInstitucion(authentication);
+    }
+
     @GetMapping("/{id}")
     public Capacitacion obtenerPorId(@PathVariable Long id) {
         return capacitacionService.obtenerPorId(id);
     }
 
     @PutMapping("/editar/{id}")
-    public Capacitacion editarCapacitacion(@PathVariable Long id, @Valid @RequestBody CapacitacionRegistroDTO dto) {
-        return capacitacionService.editar(id, dto);
+    public Capacitacion editarCapacitacion(@PathVariable Long id,
+                                           @Valid @RequestBody CapacitacionRegistroDTO dto,
+                                           Authentication authentication) {
+        return capacitacionService.editar(id, dto, authentication);
     }
 
     // Baja lógica
     @PutMapping("/baja/{id}")
-    public Capacitacion darDeBajaCapacitacion(@PathVariable Long id) {
-        return capacitacionService.darDeBaja(id);
+    public Capacitacion darDeBajaCapacitacion(@PathVariable Long id, Authentication authentication) {
+        return capacitacionService.darDeBaja(id, authentication);
     }
 }

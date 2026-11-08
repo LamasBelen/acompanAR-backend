@@ -10,4 +10,7 @@ import java.util.List;
 public interface CapacitacionRepository extends JpaRepository <Capacitacion, Long> {
     // Spring genera la consulta solo a partir del nombre: SELECT * FROM capacitaciones WHERE estado = ?
     List<Capacitacion> findByEstado(Estado estado);
+
+    // Las capacitaciones activas de una institución
+    List<Capacitacion> findByInstitucionIdAndEstado(Long idInstitucion, Estado estado);
 }

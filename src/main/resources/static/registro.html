@@ -24,6 +24,7 @@
                 <select id="tipoCuenta">
                     <option value="profesional">Profesional (busco trabajo)</option>
                     <option value="empleador">Empleador (busco profesionales)</option>
+                    <option value="institucion">Institución (ofrezco capacitaciones)</option>
                 </select>
 
                 <div class="fila">
@@ -95,6 +96,19 @@
                     <textarea id="descripcionPuesto" maxlength="255"></textarea>
                 </div>
 
+                <!-- Campos que solo ve una institución -->
+                <div id="camposInstitucion" style="display: none;">
+                    <label for="nombreInstitucion">Nombre de la institución</label>
+                    <input type="text" id="nombreInstitucion" maxlength="150">
+
+                    <label for="tipoInstitucion">Tipo de institución</label>
+                    <select id="tipoInstitucion"></select>
+
+                    <p class="detalle">Los datos de arriba (nombre, apellido, teléfono) son los de la persona responsable.
+                    Tu institución va a quedar <strong>pendiente de verificación</strong> hasta que el administrador la apruebe;
+                    recién entonces vas a poder publicar capacitaciones.</p>
+                </div>
+
                 <button type="submit" class="boton boton-ancho">Registrarme</button>
                 <div id="mensaje" class="mensaje"></div>
             </form>
@@ -113,18 +127,26 @@
         const selector = document.getElementById("tipoCuenta");
         const camposProfesional = document.getElementById("camposProfesional");
         const camposEmpleador = document.getElementById("camposEmpleador");
+        const camposInstitucion = document.getElementById("camposInstitucion");
+
+        // Tipos de institución (enum del servidor)
+        pedir("/api/catalogos/tipos-institucion").then(function (r) {
+            llenarSelect(document.getElementById("tipoInstitucion"),
+                (r.ok ? r.datos : []).map(function (t) { return { valor: t.codigo, texto: t.nombre }; }));
+        });
 
         // Muestra los campos que corresponden al tipo de cuenta elegido
         selector.addEventListener("change", function () {
-            const esProfesional = selector.value === "profesional";
-            camposProfesional.style.display = esProfesional ? "block" : "none";
-            camposEmpleador.style.display = esProfesional ? "none" : "block";
+            camposProfesional.style.display = selector.value === "profesional" ? "block" : "none";
+            camposEmpleador.style.display = selector.value === "empleador" ? "block" : "none";
+            camposInstitucion.style.display = selector.value === "institucion" ? "block" : "none";
         });
 
         document.getElementById("formRegistro").addEventListener("submit", async function (evento) {
             evento.preventDefault();
             const mensaje = document.getElementById("mensaje");
-            const esProfesional = selector.value === "profesional";
+            const tipoCuenta = selector.value;
+            const esProfesional = tipoCuenta === "profesional";
 
             // Datos que comparten los dos tipos de cuenta
             const datos = {
@@ -144,6 +166,14 @@
                 datos.disponibilidad = document.getElementById("disponibilidad").value.trim();
                 datos.aniosExperiencia = Number(document.getElementById("aniosExperiencia").value);
                 datos.descripcionExperiencia = document.getElementById("descripcionExperiencia").value.trim();
+            } else if (tipoCuenta === "institucion") {
+                url = "/api/instituciones/registro";
+                datos.nombreInstitucion = document.getElementById("nombreInstitucion").value.trim();
+                datos.tipo = document.getElementById("tipoInstitucion").value;
+                if (datos.nombreInstitucion === "") {
+                    mostrarMensaje(mensaje, "Ingresá el nombre de la institución.", "error");
+                    return;
+                }
             } else {
                 url = "/api/empleadores/registro";
                 datos.nombreEmpresa = document.getElementById("nombreEmpresa").value.trim();
@@ -153,7 +183,9 @@
             const resultado = await pedir(url, "POST", datos);
 
             if (resultado.ok) {
-                mostrarMensaje(mensaje, "¡Cuenta creada! Te llevamos al ingreso...", "ok");
+                mostrarMensaje(mensaje, tipoCuenta === "institucion"
+                    ? "¡Solicitud enviada! Tu institución quedó pendiente de verificación. Ya podés ingresar."
+                    : "¡Cuenta creada! Te llevamos al ingreso...", "ok");
                 setTimeout(function () { window.location.href = "login.html"; }, 1500);
             } else {
                 mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo crear la cuenta."), "error");

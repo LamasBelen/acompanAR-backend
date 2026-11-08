@@ -322,6 +322,8 @@ textarea {
 .estado-ACEPTADA { color: var(--verde-oscuro); background: var(--ok-fondo); }
 .estado-RECHAZADA { color: var(--error); background: var(--error-fondo); }
 .estado-CANCELADA { color: var(--gris); background: #eceff1; }
+.estado-VERIFICADA, .estado-RESUELTA { color: var(--verde-oscuro); background: var(--ok-fondo); }
+.estado-DESCARTADA { color: var(--gris); background: #eceff1; }
 
 .cabecera-pagina {
     margin-bottom: 20px;
@@ -431,4 +433,10 @@ textarea {
 .ya-calificado {
     font-size: 0.9rem;
     color: var(--verde-oscuro);
+}
+
+/* ---- Moderación ---- */
+.nota-moderacion {
+    width: 100%;
+    margin: 8px 0;
 }

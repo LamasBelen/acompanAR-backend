@@ -8,12 +8,12 @@ import java.time.LocalDate;
 
 public class CapacitacionRegistroDTO {
     @NotBlank (message = "El titulo de la capacitacion es obligatorio")
-    @Size(max = 50, message = "El título no puede superar los 50 caracteres")
+    @Size(max = 255, message = "El título no puede superar los 255 caracteres")
     private String titulo;
     @NotBlank (message = "La descripcion no puede estar vacia")
     @Size(max = 1000, message = "La descripción no puede superar los 1000 caracteres")
     private String descripcion;
-    @NotNull(message = "La institución es obligatoria")
+    // Solo lo manda el administrador (elige la institución). Si publica una institución, se usa la de su cuenta.
     private Long institucionId; // id de un registro de la tabla instituciones
     @NotNull(message = "La carga horaria no puede estar vacia")
     @Positive(message = "La carga horaria debe ser mayor a 0")

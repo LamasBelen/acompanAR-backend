@@ -4,6 +4,7 @@ import com.acompanAR.backend.dto.UsuarioRespuestaDTO;
 import com.acompanAR.backend.entity.Persona;
 import com.acompanAR.backend.entity.Usuario;
 import com.acompanAR.backend.repository.EmpleadorRepository;
+import com.acompanAR.backend.repository.InstitucionRepository;
 import com.acompanAR.backend.repository.ProfesionalRepository;
 import com.acompanAR.backend.repository.UsuarioRepository;
 import org.springframework.http.HttpStatus;
@@ -20,13 +21,16 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final ProfesionalRepository profesionalRepository;
     private final EmpleadorRepository empleadorRepository;
+    private final InstitucionRepository institucionRepository;
 
     public UsuarioService(UsuarioRepository usuarioRepository,
                           ProfesionalRepository profesionalRepository,
-                          EmpleadorRepository empleadorRepository) {
+                          EmpleadorRepository empleadorRepository,
+                          InstitucionRepository institucionRepository) {
         this.usuarioRepository = usuarioRepository;
         this.profesionalRepository = profesionalRepository;
         this.empleadorRepository = empleadorRepository;
+        this.institucionRepository = institucionRepository;
     }
 
     // Datos del usuario a partir de su nombre de usuario
@@ -49,6 +53,8 @@ public class UsuarioService {
                 .ifPresent(p -> respuesta.setIdProfesional(p.getId()));
         empleadorRepository.findByUsuarioId(usuario.getId())
                 .ifPresent(e -> respuesta.setIdEmpleador(e.getId()));
+        institucionRepository.findByUsuarioId(usuario.getId())
+                .ifPresent(i -> respuesta.setIdInstitucion(i.getId()));
         return respuesta;
     }
 }

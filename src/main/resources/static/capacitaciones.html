@@ -89,6 +89,7 @@
             boton.disabled = inscripto;
             boton.addEventListener("click", function () { inscribirse(cap.id, boton); });
             acciones.appendChild(boton);
+            agregarBotonDenuncia(acciones, info, "CAPACITACION", cap.id);
 
             tarjeta.appendChild(info);
             tarjeta.appendChild(acciones);

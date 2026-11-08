@@ -90,7 +90,7 @@
         // ---------------- Instituciones ----------------
         async function cargarInstituciones() {
             const lista = document.getElementById("listaInstituciones");
-            const resultado = await pedir("/api/instituciones");
+            const resultado = await pedir("/api/instituciones/todas");
             if (!resultado.ok) {
                 mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudieron cargar las instituciones."), "error");
                 return;
@@ -106,6 +106,7 @@
                 info.appendChild(crear("p", "detalle",
                     (inst.tipo === "PUBLICA" ? "Pública" : "Privada") + " · " + nombreLocalidad(inst.localidad)));
                 const acciones = crear("div", "acciones");
+                acciones.appendChild(crear("span", "estado estado-" + inst.estadoVerificacion, inst.estadoVerificacion));
                 const editar = crear("button", "boton boton-chico boton-secundario", "Editar");
                 editar.addEventListener("click", function () { empezarEdicionInstitucion(inst); });
                 const baja = crear("button", "boton boton-chico boton-peligro", "Dar de baja");

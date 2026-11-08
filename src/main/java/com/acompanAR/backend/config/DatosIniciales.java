@@ -1,6 +1,7 @@
 package com.acompanAR.backend.config;
 
 import com.acompanAR.backend.entity.Estado;
+import com.acompanAR.backend.entity.EstadoVerificacion;
 import com.acompanAR.backend.entity.Institucion;
 import com.acompanAR.backend.entity.Localidad;
 import com.acompanAR.backend.entity.TipoInstitucion;
@@ -55,6 +56,7 @@ public class DatosIniciales {
         institucion.setTipo(tipo);
         institucion.setLocalidad(localidad);
         institucion.setEstado(Estado.ACTIVO);
+        institucion.setEstadoVerificacion(EstadoVerificacion.VERIFICADA); // las carga el sistema: ya están verificadas
         repository.save(institucion);
     }
 }

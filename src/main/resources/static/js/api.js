@@ -88,7 +88,12 @@ async function armarMenu() {
                 { texto: "Publicar oferta", url: "oferta-form.html" },
                 { texto: "Mi perfil", url: "perfil.html" }
             ],
+            INSTITUCION: [
+                { texto: "Mis capacitaciones", url: "admin-capacitaciones.html" },
+                { texto: "Nueva capacitación", url: "capacitacion-form.html" }
+            ],
             ADMINISTRADOR: [
+                { texto: "Moderación", url: "admin-moderacion.html" },
                 { texto: "Capacitaciones", url: "admin-capacitaciones.html" },
                 { texto: "Nueva capacitación", url: "capacitacion-form.html" },
                 { texto: "Instituciones y tipos", url: "admin-catalogos.html" }
@@ -259,4 +264,75 @@ function mostrarCalificacionesRecibidas(contenedor, reputacion) {
         if (c.comentario) bloque.appendChild(crear("p", "", c.comentario));
         contenedor.appendChild(bloque);
     });
+}
+
+// ------------------------------------------
+// Denuncias (moderación de la comunidad)
+// ------------------------------------------
+
+// Motivos que coinciden con el enum MotivoDenuncia del servidor
+const MOTIVOS_DENUNCIA = [
+    { valor: "ESTAFA", texto: "Posible estafa" },
+    { valor: "CONTENIDO_INAPROPIADO", texto: "Contenido inapropiado o que no es laboral" },
+    { valor: "DATOS_FALSOS", texto: "Datos falsos" },
+    { valor: "OTRO", texto: "Otro motivo" }
+];
+
+// Arma el formulario para denunciar algo.
+// objeto: PROFESIONAL, EMPLEADOR, INSTITUCION, OFERTA o CAPACITACION. alTerminar se ejecuta al enviar bien.
+function armarFormularioDenuncia(objeto, idObjeto, alTerminar) {
+    const formulario = crear("form", "calificar");
+
+    formulario.appendChild(crear("label", "", "Motivo de la denuncia"));
+    const motivo = crear("select");
+    llenarSelect(motivo, MOTIVOS_DENUNCIA);
+    formulario.appendChild(motivo);
+
+    formulario.appendChild(crear("label", "", "Contanos qué pasó"));
+    const descripcion = crear("textarea", "", "", { maxlength: "500", required: "required" });
+    formulario.appendChild(descripcion);
+
+    const aviso = crear("div", "mensaje");
+    const enviar = crear("button", "boton boton-chico boton-peligro", "Enviar denuncia", { type: "submit" });
+    const cancelar = crear("button", "boton boton-chico boton-secundario", "Cancelar", { type: "button" });
+    cancelar.addEventListener("click", function () { alTerminar(false); });
+    formulario.appendChild(enviar);
+    formulario.appendChild(cancelar);
+    formulario.appendChild(aviso);
+
+    formulario.addEventListener("submit", async function (evento) {
+        evento.preventDefault();
+        enviar.disabled = true;
+        const resultado = await pedir("/api/denuncias/nueva", "POST", {
+            objeto: objeto,
+            idObjeto: idObjeto,
+            motivo: motivo.value,
+            descripcion: descripcion.value.trim()
+        });
+        if (resultado.ok) {
+            alTerminar(true);
+        } else {
+            enviar.disabled = false;
+            mostrarMensaje(aviso, mensajeDeError(resultado, "No se pudo enviar la denuncia."), "error");
+        }
+    });
+    return formulario;
+}
+
+// Agrega un botón "Denunciar" a una tarjeta: al apretarlo aparece el formulario dentro de "info".
+function agregarBotonDenuncia(acciones, info, objeto, idObjeto) {
+    const boton = crear("button", "boton boton-chico boton-secundario", "Denunciar");
+    boton.addEventListener("click", function () {
+        boton.disabled = true;
+        const formulario = armarFormularioDenuncia(objeto, idObjeto, function (enviada) {
+            formulario.remove();
+            if (enviada) {
+                boton.textContent = "Denuncia enviada ✓";
+            } else {
+                boton.disabled = false;
+            }
+        });
+        info.appendChild(formulario);
+    });
+    acciones.appendChild(boton);
 }

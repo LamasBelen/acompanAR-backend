@@ -23,6 +23,7 @@
             <a class="boton" href="capacitacion-form.html">Nueva capacitación</a>
         </div>
 
+        <div id="estadoInstitucion"></div>
         <div id="mensaje" class="mensaje"></div>
         <div id="lista" class="lista"></div>
     </main>
@@ -38,12 +39,21 @@
             const usuario = await requerirSesion();
             if (usuario === null) return;
 
-            if (usuario.rol !== "ADMINISTRADOR") {
-                mostrarMensaje(mensaje, "Esta pantalla es para administradores.", "error");
+            if (usuario.rol !== "ADMINISTRADOR" && usuario.rol !== "INSTITUCION") {
+                mostrarMensaje(mensaje, "Esta pantalla es para administradores e instituciones.", "error");
                 return;
             }
 
-            const resultado = await pedir("/api/capacitaciones");
+            // El administrador ve todas; una institución, solo las suyas
+            let url = "/api/capacitaciones";
+            if (usuario.rol === "INSTITUCION") {
+                url = "/api/capacitaciones/mias";
+                document.querySelector("h1").textContent = "Mis capacitaciones";
+                document.querySelector(".subtitulo").textContent = "Las capacitaciones que publicó tu institución.";
+                await mostrarEstadoInstitucion();
+            }
+
+            const resultado = await pedir(url);
             if (!resultado.ok) {
                 mostrarMensaje(mensaje, "No se pudieron cargar las capacitaciones.", "error");
                 return;
@@ -57,6 +67,22 @@
             resultado.datos.forEach(function (cap) {
                 lista.appendChild(armarTarjeta(cap));
             });
+        }
+
+        // Avisa si la institución todavía no puede publicar
+        async function mostrarEstadoInstitucion() {
+            const resultado = await pedir("/api/instituciones/mia");
+            if (!resultado.ok) return;
+            const caja = document.getElementById("estadoInstitucion");
+            const estado = resultado.datos.estadoVerificacion;
+            let texto = null;
+            if (estado === "PENDIENTE") texto = "Tu institución está pendiente de verificación. Cuando el administrador la apruebe vas a poder publicar capacitaciones.";
+            if (estado === "RECHAZADA") texto = "La solicitud de tu institución fue rechazada por el administrador.";
+            if (texto) {
+                const aviso = crear("div", "aviso aviso-atencion");
+                aviso.appendChild(crear("p", "", texto));
+                caja.appendChild(aviso);
+            }
         }
 
         function armarTarjeta(cap) {

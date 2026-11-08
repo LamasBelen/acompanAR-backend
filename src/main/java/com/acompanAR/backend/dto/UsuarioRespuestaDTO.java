@@ -14,6 +14,7 @@ public class UsuarioRespuestaDTO {
     private String apellido;
     private Long idProfesional; // solo si el usuario es PROFESIONAL
     private Long idEmpleador;   // solo si el usuario es EMPLEADOR
+    private Long idInstitucion; // solo si el usuario es INSTITUCION
 
     public Long getId() {
         return id;
@@ -69,5 +70,13 @@ public class UsuarioRespuestaDTO {
 
     public void setIdEmpleador(Long idEmpleador) {
         this.idEmpleador = idEmpleador;
+    }
+
+    public Long getIdInstitucion() {
+        return idInstitucion;
+    }
+
+    public void setIdInstitucion(Long idInstitucion) {
+        this.idInstitucion = idInstitucion;
     }
 }

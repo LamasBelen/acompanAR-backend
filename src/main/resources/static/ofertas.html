@@ -87,6 +87,7 @@
             boton.disabled = postulado;
             boton.addEventListener("click", function () { postularse(oferta.id, boton); });
             acciones.appendChild(boton);
+            agregarBotonDenuncia(acciones, info, "OFERTA", oferta.id);
 
             tarjeta.appendChild(info);
             tarjeta.appendChild(acciones);

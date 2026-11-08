@@ -58,21 +58,39 @@
         // Si la dirección trae ?id=5 estamos EDITANDO la capacitación 5; si no, estamos creando una nueva
         const idCapacitacion = new URLSearchParams(window.location.search).get("id");
         const mensaje = document.getElementById("mensaje");
+        let esInstitucion = false;
 
         async function iniciar() {
             const usuario = await requerirSesion();
             if (usuario === null) return;
 
-            if (usuario.rol !== "ADMINISTRADOR") {
-                mostrarMensaje(mensaje, "Esta pantalla es para administradores.", "error");
+            if (usuario.rol !== "ADMINISTRADOR" && usuario.rol !== "INSTITUCION") {
+                mostrarMensaje(mensaje, "Esta pantalla es para administradores e instituciones.", "error");
                 document.getElementById("formCapacitacion").style.display = "none";
                 return;
             }
+            esInstitucion = usuario.rol === "INSTITUCION";
 
-            // La institución se elige de la lista de instituciones activas (tabla "instituciones")
-            const instituciones = await pedir("/api/instituciones");
-            llenarSelect(document.getElementById("institucion"),
-                (instituciones.ok ? instituciones.datos : []).map(function (i) { return { valor: i.id, texto: i.nombre }; }));
+            if (esInstitucion) {
+                // Una institución publica siempre a su nombre: no elige institución
+                document.getElementById("institucion").required = false;
+                document.getElementById("institucion").previousElementSibling.style.display = "none";
+                document.getElementById("institucion").style.display = "none";
+
+                const mia = await pedir("/api/instituciones/mia");
+                if (mia.ok && mia.datos.estadoVerificacion !== "VERIFICADA") {
+                    mostrarMensaje(mensaje, mia.datos.estadoVerificacion === "PENDIENTE"
+                        ? "Tu institución está pendiente de verificación. Cuando el administrador la apruebe vas a poder publicar capacitaciones."
+                        : "La solicitud de tu institución fue rechazada, no podés publicar capacitaciones.", "error");
+                    document.getElementById("formCapacitacion").style.display = "none";
+                    return;
+                }
+            } else {
+                // El administrador elige entre las instituciones activas y verificadas
+                const instituciones = await pedir("/api/instituciones");
+                llenarSelect(document.getElementById("institucion"),
+                    (instituciones.ok ? instituciones.datos : []).map(function (i) { return { valor: i.id, texto: i.nombre }; }));
+            }
 
             if (idCapacitacion !== null) {
                 document.getElementById("titulo").textContent = "Editar capacitación";
@@ -85,7 +103,7 @@
                 }
                 const cap = resultado.datos;
                 document.getElementById("tituloCap").value = cap.titulo;
-                document.getElementById("institucion").value = cap.institucion.id;
+                if (!esInstitucion) document.getElementById("institucion").value = cap.institucion.id;
                 document.getElementById("descripcion").value = cap.descripcion;
                 document.getElementById("cargaHoraria").value = cap.cargaHoraria;
                 document.getElementById("fechaInicio").value = cap.fechaInicio || "";
@@ -100,7 +118,7 @@
             const enlace = document.getElementById("linkVideo").value.trim();
             const datos = {
                 titulo: document.getElementById("tituloCap").value.trim(),
-                institucionId: Number(document.getElementById("institucion").value),
+                institucionId: esInstitucion ? null : Number(document.getElementById("institucion").value),
                 descripcion: document.getElementById("descripcion").value.trim(),
                 cargaHoraria: parseInt(document.getElementById("cargaHoraria").value, 10),
                 fechaInicio: fecha === "" ? null : fecha,   // si no eligen fecha, el backend usa hoy + 15 días
