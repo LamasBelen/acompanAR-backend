@@ -20,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  */
 @Configuration
 public class AdminInicial {
-
+/*el @Bean lo use para anotación que se coloca sobre un método para indicarle al framework que el objeto devuelto por dicho método debe ser registrado, instanciado y gestionado por el contenedor de Spring*/
     @Bean
     CommandLineRunner crearAdministrador(UsuarioRepository usuarioRepository,
                                          PasswordEncoder passwordEncoder,
