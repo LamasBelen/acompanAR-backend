@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderación - acompanAR</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+    <header class="barra">
+        <div class="barra-contenido">
+            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <nav class="menu" id="menu"></nav>
+        </div>
+    </header>
+
+    <main class="contenedor">
+        <div class="cabecera-pagina">
+            <h1>Moderación de la comunidad</h1>
+            <p class="subtitulo">Verificá instituciones, revisá denuncias y dá de baja perfiles que no cumplan las normas.</p>
+        </div>
+
+        <div id="mensaje" class="mensaje"></div>
+        <div id="contenido">
+            <div class="seccion">
+                <div class="seccion-titulo"><h2>Instituciones por verificar</h2></div>
+                <div id="listaInstituciones" class="lista"></div>
+            </div>
+            <div class="seccion">
+                <div class="seccion-titulo"><h2>Denuncias pendientes</h2></div>
+                <div id="listaDenuncias" class="lista"></div>
+            </div>
+            <div class="seccion">
+                <div class="seccion-titulo"><h2>Perfiles de la comunidad</h2></div>
+                <p class="detalle">Si hace falta, podés dar de baja un perfil directamente (baja lógica: no se borra nada).</p>
+                <div id="listaPerfiles" class="lista"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script>
+        armarMenu();
+
+        const mensaje = document.getElementById("mensaje");
+        const NOMBRES_OBJETO = { PROFESIONAL: "Profesional", EMPLEADOR: "Empleador", INSTITUCION: "Institución",
+                                 OFERTA: "Oferta laboral", CAPACITACION: "Capacitación" };
+        const NOMBRES_MOTIVO = {};
+        MOTIVOS_DENUNCIA.forEach(function (m) { NOMBRES_MOTIVO[m.valor] = m.texto; });
+
+        async function iniciar() {
+            const usuario = await requerirSesion();
+            if (usuario === null) return;
+            if (usuario.rol !== "ADMINISTRADOR") {
+                mostrarMensaje(mensaje, "Esta pantalla es para administradores.", "error");
+                document.getElementById("contenido").style.display = "none";
+                return;
+            }
+            await cargarLocalidades();
+            cargarTodo();
+        }
+
+        function cargarTodo() {
+            cargarInstituciones();
+            cargarDenuncias();
+            cargarPerfiles();
+        }
+
+        // Ejecuta una acción PUT y recarga todo (o muestra el error del servidor)
+        async function accion(url, cuerpo, textoError) {
+            const resultado = await pedir(url, "PUT", cuerpo);
+            if (resultado.ok) {
+                mostrarMensaje(mensaje, "Listo.", "ok");
+            } else {
+                mostrarMensaje(mensaje, mensajeDeError(resultado, textoError), "error");
+            }
+            cargarTodo();
+        }
+
+        // ---------- Instituciones pendientes ----------
+        async function cargarInstituciones() {
+            const lista = document.getElementById("listaInstituciones");
+            const resultado = await pedir("/api/instituciones/todas");
+            lista.innerHTML = "";
+            const pendientes = (resultado.ok ? resultado.datos : []).filter(function (i) { return i.estadoVerificacion === "PENDIENTE"; });
+            if (pendientes.length === 0) {
+                lista.appendChild(crear("p", "vacio", "No hay instituciones esperando verificación."));
+                return;
+            }
+            pendientes.forEach(function (inst) {
+                const tarjeta = crear("div", "tarjeta item");
+                const info = crear("div");
+                info.appendChild(crear("h2", "", inst.nombre));
+                info.appendChild(crear("p", "detalle",
+                    (inst.tipo === "PUBLICA" ? "Pública" : "Privada") + " · " + nombreLocalidad(inst.localidad)));
+                info.appendChild(crear("p", "detalle",
+                    "Responsable: " + (inst.responsable || "-") + " · Tel: " + (inst.telefono || "-") + " · Usuario: " + (inst.nombreUsuario || "-")));
+                const acciones = crear("div", "acciones");
+                const aprobar = crear("button", "boton boton-chico", "Aprobar");
+                aprobar.addEventListener("click", function () {
+                    accion("/api/instituciones/verificar/" + inst.id, null, "No se pudo verificar la institución.");
+                });
+                const rechazar = crear("button", "boton boton-chico boton-peligro", "Rechazar");
+                rechazar.addEventListener("click", function () {
+                    if (confirm("¿Rechazar la solicitud de " + inst.nombre + "?")) {
+                        accion("/api/instituciones/rechazar/" + inst.id, null, "No se pudo rechazar la solicitud.");
+                    }
+                });
+                acciones.appendChild(aprobar);
+                acciones.appendChild(rechazar);
+                tarjeta.appendChild(info);
+                tarjeta.appendChild(acciones);
+                lista.appendChild(tarjeta);
+            });
+        }
+
+        // ---------- Denuncias ----------
+        async function cargarDenuncias() {
+            const lista = document.getElementById("listaDenuncias");
+            const resultado = await pedir("/api/denuncias?estado=PENDIENTE");
+            lista.innerHTML = "";
+            const denuncias = resultado.ok ? resultado.datos : [];
+            if (denuncias.length === 0) {
+                lista.appendChild(crear("p", "vacio", "No hay denuncias pendientes."));
+                return;
+            }
+            denuncias.forEach(function (d) {
+                const tarjeta = crear("div", "tarjeta item");
+                const info = crear("div");
+                info.appendChild(crear("h2", "", NOMBRES_OBJETO[d.objeto] + ": " + d.descripcionObjeto));
+                info.appendChild(crear("p", "detalle",
+                    NOMBRES_MOTIVO[d.motivo] + " · Denunció " + d.nombreDenunciante + " el " + formatearFecha(d.fecha)));
+                info.appendChild(crear("p", "", d.descripcion));
+                if (!d.objetoActivo) {
+                    info.appendChild(crear("p", "detalle", "Esto ya está dado de baja."));
+                }
+
+                const nota = crear("textarea", "nota-moderacion", "", { maxlength: "300", placeholder: "Nota de resolución (opcional)" });
+                info.appendChild(nota);
+
+                const acciones = crear("div", "acciones");
+                const baja = crear("button", "boton boton-chico boton-peligro", "Dar de baja");
+                baja.addEventListener("click", function () {
+                    if (confirm("¿Dar de baja " + d.descripcionObjeto + "?")) {
+                        accion("/api/denuncias/resolver/" + d.id, { accion: "DAR_DE_BAJA", nota: nota.value.trim() },
+                            "No se pudo resolver la denuncia.");
+                    }
+                });
+                const descartar = crear("button", "boton boton-chico boton-secundario", "Descartar");
+                descartar.addEventListener("click", function () {
+                    accion("/api/denuncias/resolver/" + d.id, { accion: "DESCARTAR", nota: nota.value.trim() },
+                        "No se pudo descartar la denuncia.");
+                });
+                acciones.appendChild(baja);
+                acciones.appendChild(descartar);
+                tarjeta.appendChild(info);
+                tarjeta.appendChild(acciones);
+                lista.appendChild(tarjeta);
+            });
+        }
+
+        // ---------- Perfiles ----------
+        async function cargarPerfiles() {
+            const lista = document.getElementById("listaPerfiles");
+            const respuestas = await Promise.all([
+                pedir("/api/profesionales"), pedir("/api/empleadores"), pedir("/api/instituciones/todas")
+            ]);
+            lista.innerHTML = "";
+            const filas = [];
+            (respuestas[0].ok ? respuestas[0].datos : []).forEach(function (p) {
+                filas.push({ tipo: "Profesional", nombre: p.persona.nombre + " " + p.persona.apellido,
+                             url: "/api/profesionales/baja/" + p.id });
+            });
+            (respuestas[1].ok ? respuestas[1].datos : []).forEach(function (e) {
+                filas.push({ tipo: "Empleador", nombre: e.nombreEmpresa + " (" + e.persona.nombre + " " + e.persona.apellido + ")",
+                             url: "/api/empleadores/baja/" + e.id });
+            });
+            (respuestas[2].ok ? respuestas[2].datos : []).forEach(function (i) {
+                filas.push({ tipo: "Institución", nombre: i.nombre, url: "/api/instituciones/baja/" + i.id });
+            });
+            if (filas.length === 0) {
+                lista.appendChild(crear("p", "vacio", "No hay perfiles activos."));
+                return;
+            }
+            filas.forEach(function (f) {
+                const tarjeta = crear("div", "tarjeta item");
+                const info = crear("div");
+                info.appendChild(crear("h2", "", f.nombre));
+                info.appendChild(crear("p", "detalle", f.tipo));
+                const baja = crear("button", "boton boton-chico boton-peligro", "Dar de baja");
+                baja.addEventListener("click", function () {
+                    if (confirm("¿Dar de baja a " + f.nombre + "? No va a poder volver a ingresar.")) {
+                        accion(f.url, null, "No se pudo dar de baja el perfil.");
+                    }
+                });
+                tarjeta.appendChild(info);
+                tarjeta.appendChild(baja);
+                lista.appendChild(tarjeta);
+            });
+        }
+
+        iniciar();
+    </script>
+</body>
+</html>
