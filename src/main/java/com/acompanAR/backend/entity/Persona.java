@@ -10,6 +10,9 @@ public class Persona {
     private String nombre;
     private String apellido;
     private String telefono;
+
+    @Column(length = 120)
+    private String email;
     @Enumerated(EnumType.STRING)
     private Localidad localidad;
 
@@ -43,6 +46,14 @@ public class Persona {
 
     public void setTelefono(String telefono) {
         this.telefono = telefono;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public Localidad getLocalidad() {

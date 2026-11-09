@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 // Datos que un profesional puede modificar de su perfil.
@@ -19,6 +20,10 @@ public class ProfesionalEdicionDTO {
     @NotBlank(message = "El telefono es obligatorio")
     @Size(max = 30, message = "El teléfono no puede superar los 30 caracteres")
     private String telefono;
+    @NotBlank(message = "El correo electrónico es obligatorio")
+    @Email(message = "El correo electrónico no es válido")
+    @Size(max = 120, message = "El correo no puede superar los 120 caracteres")
+    private String email;
     @NotNull(message = "La localidad es obligatoria")
     private Localidad localidad;
 
@@ -49,6 +54,14 @@ public class ProfesionalEdicionDTO {
 
     public void setApellido(String apellido) {
         this.apellido = apellido;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getTelefono() {

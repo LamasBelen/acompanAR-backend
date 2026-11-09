@@ -38,6 +38,9 @@
                     </div>
                 </div>
 
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" required maxlength="120" autocomplete="email">
+
                 <div class="fila">
                     <div>
                         <label for="telefono">Teléfono</label>
@@ -152,6 +155,7 @@
             const datos = {
                 nombre: document.getElementById("nombre").value.trim(),
                 apellido: document.getElementById("apellido").value.trim(),
+                email: document.getElementById("email").value.trim(),
                 telefono: document.getElementById("telefono").value.trim(),
                 localidad: document.getElementById("localidad").value,
                 nombreUsuario: document.getElementById("nombreUsuario").value.trim(),

@@ -58,11 +58,17 @@ public class EmpleadorService {
                     "El nombre de usuario '" + dto.getNombreUsuario() + "' ya está en uso. Elegí otro.");
         }
 
+        if (personaRepository.existsByEmailIgnoreCase(dto.getEmail().trim())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "El correo '" + dto.getEmail().trim() + "' ya está registrado. Usá otro.");
+        }
+
         // 1. Persona
         Persona persona = new Persona();
         persona.setNombre(dto.getNombre());
         persona.setApellido(dto.getApellido());
         persona.setTelefono(dto.getTelefono());
+        persona.setEmail(dto.getEmail().trim());
         persona.setLocalidad(dto.getLocalidad());
         persona = personaRepository.save(persona);
 
@@ -102,9 +108,15 @@ public class EmpleadorService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No podés modificar el perfil de otra persona");
         }
 
+        if (personaRepository.existsByEmailIgnoreCaseAndIdNot(dto.getEmail().trim(), empleador.getPersona().getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "El correo '" + dto.getEmail().trim() + "' ya está registrado. Usá otro.");
+        }
+
         empleador.getPersona().setNombre(dto.getNombre());
         empleador.getPersona().setApellido(dto.getApellido());
         empleador.getPersona().setTelefono(dto.getTelefono());
+        empleador.getPersona().setEmail(dto.getEmail().trim());
         empleador.getPersona().setLocalidad(dto.getLocalidad());
 
         empleador.setNombreEmpresa(dto.getNombreEmpresa());

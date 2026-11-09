@@ -92,11 +92,17 @@ public class ProfesionalService {
                     "La matrícula '" + matricula + "' ya está registrada por otro profesional.");
         }
 
+        if (personaRepository.existsByEmailIgnoreCase(dto.getEmail().trim())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "El correo '" + dto.getEmail().trim() + "' ya está registrado. Usá otro.");
+        }
+
         // 1. Persona
         Persona persona = new Persona();
         persona.setNombre(dto.getNombre());
         persona.setApellido(dto.getApellido());
         persona.setTelefono(dto.getTelefono());
+        persona.setEmail(dto.getEmail().trim());
         persona.setLocalidad(dto.getLocalidad());
         persona = personaRepository.save(persona);
 
@@ -148,10 +154,16 @@ public class ProfesionalService {
                     "La matrícula '" + matricula + "' ya está registrada por otro profesional.");
         }
 
+        if (personaRepository.existsByEmailIgnoreCaseAndIdNot(dto.getEmail().trim(), profesional.getPersona().getId())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "El correo '" + dto.getEmail().trim() + "' ya está registrado. Usá otro.");
+        }
+
         // Datos personales (no se toca el usuario ni la contraseña)
         profesional.getPersona().setNombre(dto.getNombre());
         profesional.getPersona().setApellido(dto.getApellido());
         profesional.getPersona().setTelefono(dto.getTelefono());
+        profesional.getPersona().setEmail(dto.getEmail().trim());
         profesional.getPersona().setLocalidad(dto.getLocalidad());
 
         // Datos propios del profesional

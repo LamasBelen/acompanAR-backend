@@ -31,6 +31,9 @@
                     </div>
                 </div>
 
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" required maxlength="120">
+
                 <div class="fila">
                     <div>
                         <label for="telefono">Teléfono</label>
@@ -146,6 +149,7 @@
             document.getElementById("nombre").value = perfil.persona.nombre;
             document.getElementById("apellido").value = perfil.persona.apellido;
             document.getElementById("telefono").value = perfil.persona.telefono;
+            document.getElementById("email").value = perfil.persona.email || "";
             document.getElementById("localidad").value = perfil.persona.localidad;
 
             if (esProfesional) {
@@ -166,6 +170,7 @@
             const datos = {
                 nombre: document.getElementById("nombre").value.trim(),
                 apellido: document.getElementById("apellido").value.trim(),
+                email: document.getElementById("email").value.trim(),
                 telefono: document.getElementById("telefono").value.trim(),
                 localidad: document.getElementById("localidad").value
             };

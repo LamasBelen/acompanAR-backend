@@ -1,6 +1,7 @@
 package com.acompanAR.backend.controller;
 
 import com.acompanAR.backend.dto.InscripcionRegistroDTO;
+import com.acompanAR.backend.dto.InscriptoRespuestaDTO;
 import com.acompanAR.backend.entity.Inscripcion;
 import com.acompanAR.backend.service.InscripcionService;
 import jakarta.validation.Valid;
@@ -34,6 +35,12 @@ public class InscripcionController {
     @GetMapping("/profesional/{idProfesional}")
     public List<Inscripcion> porProfesional(@PathVariable Long idProfesional, Authentication authentication) {
         return inscripcionService.listarPorProfesional(idProfesional, authentication);
+    }
+
+    // La institución dueña de la capacitación (o el administrador) consulta sus inscriptos
+    @GetMapping("/capacitacion/{idCapacitacion}")
+    public List<InscriptoRespuestaDTO> inscriptos(@PathVariable Long idCapacitacion, Authentication authentication) {
+        return inscripcionService.listarInscriptos(idCapacitacion, authentication);
     }
 
     // El profesional marca que terminó la capacitación

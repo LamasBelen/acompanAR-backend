@@ -74,7 +74,8 @@
             if (postulacion.estado === "ACEPTADA" && oferta.empleador && oferta.empleador.persona) {
                 const contacto = oferta.empleador.persona;
                 info.appendChild(crear("p", "detalle",
-                    "¡Te aceptaron! Contacto: " + contacto.nombre + " " + contacto.apellido + " · " + contacto.telefono));
+                    "¡Te aceptaron! Contacto: " + contacto.nombre + " " + contacto.apellido + " · " + contacto.telefono +
+                    (contacto.email ? " · " + contacto.email : "")));
             }
 
             // Reputación del empleador (se completa cuando llega la respuesta del servidor)

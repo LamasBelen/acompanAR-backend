@@ -336,3 +336,41 @@ function agregarBotonDenuncia(acciones, info, objeto, idObjeto) {
     });
     acciones.appendChild(boton);
 }
+
+// ------------------------------------------
+// Inscriptos a una capacitación (para la institución)
+// ------------------------------------------
+
+// Lista de inscriptos de una capacitación: [{ nombreCompleto, tipoProfesional, email, telefono, estado, fechaInscripcion }]
+async function cargarInscriptos(idCapacitacion) {
+    const resultado = await pedir("/api/inscripciones/capacitacion/" + idCapacitacion);
+    return resultado.ok && Array.isArray(resultado.datos) ? resultado.datos : [];
+}
+
+// Las inscripciones canceladas no cuentan como inscriptos
+function inscriptosVigentes(lista) {
+    return lista.filter(function (i) { return i.estado !== "CANCELADA"; });
+}
+
+// "3 inscriptos" / "1 inscripto" / "Sin inscriptos"
+function textoInscriptos(cantidad) {
+    if (cantidad === 0) return "Sin inscriptos";
+    return cantidad + (cantidad === 1 ? " inscripto" : " inscriptos");
+}
+
+// Dibuja la lista de inscriptos dentro de un contenedor
+function mostrarInscriptos(contenedor, lista) {
+    contenedor.innerHTML = "";
+    if (lista.length === 0) {
+        contenedor.appendChild(crear("p", "detalle", "Todavía no se inscribió nadie."));
+        return;
+    }
+    lista.forEach(function (i) {
+        const bloque = crear("div", "comentario");
+        bloque.appendChild(crear("p", "", i.nombreCompleto + (i.tipoProfesional ? " · " + i.tipoProfesional : "")));
+        const contacto = [i.email, i.telefono].filter(Boolean).join(" · ");
+        bloque.appendChild(crear("p", "detalle",
+            (contacto ? contacto + " · " : "") + "Se inscribió el " + formatearFecha(i.fechaInscripcion) + " · " + i.estado));
+        contenedor.appendChild(bloque);
+    });
+}

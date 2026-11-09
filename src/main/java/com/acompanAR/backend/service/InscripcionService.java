@@ -1,6 +1,7 @@
 package com.acompanAR.backend.service;
 
 import com.acompanAR.backend.dto.InscripcionRegistroDTO;
+import com.acompanAR.backend.dto.InscriptoRespuestaDTO;
 import com.acompanAR.backend.entity.Capacitacion;
 import com.acompanAR.backend.entity.Estado;
 import com.acompanAR.backend.entity.EstadoInscripcionCapacitacion;
@@ -72,6 +73,41 @@ public class InscripcionService {
         Profesional profesional = buscarProfesional(idProfesional);
         verificarProfesional(profesional, authentication);
         return inscripcionRepository.findByProfesionalId(idProfesional);
+    }
+
+    // La institución dueña de la capacitación (o el administrador) ve quiénes se inscribieron
+    public List<InscriptoRespuestaDTO> listarInscriptos(Long idCapacitacion, Authentication authentication) {
+        Capacitacion capacitacion = capacitacionRepository.findById(idCapacitacion)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Capacitación no encontrada"));
+
+        if (!Permisos.esAdministrador(authentication)) {
+            boolean esSuya = capacitacion.getInstitucion().getUsuario() != null
+                    && Permisos.esElMismoUsuario(capacitacion.getInstitucion().getUsuario().getNombreUsuario(), authentication);
+            if (!esSuya) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Esta capacitación no es de tu institución");
+            }
+        }
+
+        return inscripcionRepository.findByCapacitacionId(idCapacitacion).stream()
+                .map(this::aInscriptoDTO)
+                .toList();
+    }
+
+    private InscriptoRespuestaDTO aInscriptoDTO(Inscripcion inscripcion) {
+        Profesional profesional = inscripcion.getProfesional();
+        InscriptoRespuestaDTO dto = new InscriptoRespuestaDTO();
+        dto.setIdInscripcion(inscripcion.getId());
+        dto.setNombreCompleto(profesional.nombreCompleto());
+        if (profesional.getTipoProfesional() != null) {
+            dto.setTipoProfesional(profesional.getTipoProfesional().getNombre());
+        }
+        if (profesional.getPersona() != null) {
+            dto.setEmail(profesional.getPersona().getEmail());
+            dto.setTelefono(profesional.getPersona().getTelefono());
+        }
+        dto.setEstado(inscripcion.getEstado());
+        dto.setFechaInscripcion(inscripcion.getFechaInscripcion());
+        return dto;
     }
 
     // El profesional marca que terminó la capacitación

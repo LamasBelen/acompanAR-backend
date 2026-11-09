@@ -116,7 +116,7 @@
                 let detalle = empleador ? empleador.nombreEmpresa : "";
                 if (empleador && empleador.persona) {
                     const c = empleador.persona;
-                    detalle += " · Contacto: " + c.nombre + " " + c.apellido + " · " + c.telefono;
+                    detalle += " · Contacto: " + c.nombre + " " + c.apellido + " · " + c.telefono + (c.email ? " · " + c.email : "");
                 }
                 panel.appendChild(aviso("ok", "¡Te aceptaron en \"" + oferta.titulo + "\"!", detalle,
                     { texto: "Ver mis postulaciones", url: "mis-postulaciones.html" }));
@@ -235,10 +235,15 @@
             const respuestas = await Promise.all([pedir("/api/instituciones/mia"), pedirLista("/api/capacitaciones/mias")]);
             const institucion = respuestas[0].ok ? respuestas[0].datos : null;
             const capacitaciones = respuestas[1];
+            // Inscriptos de cada capacitación (una consulta por capacitación, todas juntas)
+            const inscriptosPorCap = await Promise.all(capacitaciones.map(function (c) { return cargarInscriptos(c.id); }));
+            const vigentes = inscriptosPorCap.map(inscriptosVigentes);
+            const totalInscriptos = vigentes.reduce(function (suma, lista) { return suma + lista.length; }, 0);
             const estado = institucion ? institucion.estadoVerificacion : null;
 
             panel.appendChild(resumen([
                 { numero: capacitaciones.length, rotulo: "Capacitaciones publicadas" },
+                { numero: totalInscriptos, rotulo: "Profesionales inscriptos" },
                 { numero: estado === "VERIFICADA" ? "Verificada" : estado === "PENDIENTE" ? "Pendiente" : "Rechazada",
                   rotulo: "Estado de " + (institucion ? institucion.nombre : "tu institución") }
             ]));
@@ -254,13 +259,14 @@
             const lista = seccion(panel, "Tus capacitaciones", estado === "VERIFICADA"
                 ? { texto: "Publicar nueva", url: "capacitacion-form.html" } : null);
             if (capacitaciones.length === 0) textoVacio(lista, "Todavía no publicaste ninguna capacitación.");
-            capacitaciones.forEach(function (cap) {
+            capacitaciones.forEach(function (cap, i) {
                 const tarjeta = crear("div", "tarjeta item");
                 const info = crear("div");
                 info.appendChild(crear("h2", "", cap.titulo));
-                info.appendChild(crear("p", "detalle", cap.cargaHoraria + " hs · Comienza el " + formatearFecha(cap.fechaInicio)));
+                info.appendChild(crear("p", "detalle", cap.cargaHoraria + " hs · Comienza el " + formatearFecha(cap.fechaInicio) +
+                    " · " + textoInscriptos(vigentes[i].length)));
                 tarjeta.appendChild(info);
-                tarjeta.appendChild(crear("a", "boton boton-chico boton-secundario", "Editar", { href: "capacitacion-form.html?id=" + cap.id }));
+                tarjeta.appendChild(crear("a", "boton boton-chico", "Ver inscriptos", { href: "admin-capacitaciones.html" }));
                 lista.appendChild(tarjeta);
             });
         }

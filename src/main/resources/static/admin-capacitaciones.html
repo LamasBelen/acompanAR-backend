@@ -94,7 +94,25 @@
                 cap.institucion.nombre + " · " + cap.cargaHoraria + " hs · Comienza el " + formatearFecha(cap.fechaInicio)));
             info.appendChild(crear("p", "", cap.descripcion));
 
+            // Inscriptos: cantidad y lista (se carga al abrir la pantalla)
+            const inscriptos = crear("p", "detalle", "Inscriptos: ...");
+            const listaInscriptos = crear("div");
+            listaInscriptos.style.display = "none";
+            info.appendChild(inscriptos);
+            info.appendChild(listaInscriptos);
+            cargarInscriptos(cap.id).then(function (lista) {
+                inscriptos.textContent = textoInscriptos(inscriptosVigentes(lista).length);
+                mostrarInscriptos(listaInscriptos, lista);
+            });
+
             const acciones = crear("div", "acciones");
+            const verInscriptos = crear("button", "boton boton-chico", "Ver inscriptos");
+            verInscriptos.addEventListener("click", function () {
+                const oculta = listaInscriptos.style.display === "none";
+                listaInscriptos.style.display = oculta ? "block" : "none";
+                verInscriptos.textContent = oculta ? "Ocultar inscriptos" : "Ver inscriptos";
+            });
+            acciones.appendChild(verInscriptos);
             acciones.appendChild(crear("a", "boton boton-chico boton-secundario", "Editar", { href: "capacitacion-form.html?id=" + cap.id }));
             const baja = crear("button", "boton boton-chico boton-peligro", "Dar de baja");
             baja.addEventListener("click", function () { darDeBaja(cap.id); });

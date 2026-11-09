@@ -2,6 +2,7 @@ package com.acompanAR.backend.dto;
 
 import com.acompanAR.backend.entity.Localidad;
 import com.acompanAR.backend.entity.TipoInstitucion;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -27,6 +28,10 @@ public class InstitucionCuentaRegistroDTO {
     @NotBlank(message = "El teléfono es obligatorio")
     @Size(max = 30, message = "El teléfono no puede superar los 30 caracteres")
     private String telefono;
+    @NotBlank(message = "El correo electrónico es obligatorio")
+    @Email(message = "El correo electrónico no es válido")
+    @Size(max = 120, message = "El correo no puede superar los 120 caracteres")
+    private String email;
     // Datos de la cuenta
     @NotBlank(message = "El usuario es obligatorio")
     @Size(min = 4, max = 30, message = "El usuario debe tener entre 4 y 30 caracteres")
@@ -74,6 +79,14 @@ public class InstitucionCuentaRegistroDTO {
 
     public void setApellido(String apellido) {
         this.apellido = apellido;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getTelefono() {

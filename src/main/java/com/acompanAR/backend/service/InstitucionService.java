@@ -76,6 +76,10 @@ public class InstitucionService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "El nombre de usuario '" + dto.getNombreUsuario() + "' ya está en uso. Elegí otro.");
         }
+        if (personaRepository.existsByEmailIgnoreCase(dto.getEmail().trim())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "El correo '" + dto.getEmail().trim() + "' ya está registrado. Usá otro.");
+        }
         String nombre = dto.getNombreInstitucion().trim();
         if (institucionRepository.existsByNombreIgnoreCase(nombre)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una institución llamada '" + nombre + "'");
@@ -86,6 +90,7 @@ public class InstitucionService {
         persona.setNombre(dto.getNombre());
         persona.setApellido(dto.getApellido());
         persona.setTelefono(dto.getTelefono());
+        persona.setEmail(dto.getEmail().trim());
         persona.setLocalidad(dto.getLocalidad());
         persona = personaRepository.save(persona);
 
@@ -199,6 +204,7 @@ public class InstitucionService {
         if (institucion.getPersona() != null) {
             dto.setResponsable(institucion.nombreCompleto());
             dto.setTelefono(institucion.getPersona().getTelefono());
+            dto.setEmail(institucion.getPersona().getEmail());
         }
         return dto;
     }

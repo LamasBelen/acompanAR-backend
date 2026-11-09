@@ -94,7 +94,7 @@
                 info.appendChild(crear("p", "detalle",
                     (inst.tipo === "PUBLICA" ? "Pública" : "Privada") + " · " + nombreLocalidad(inst.localidad)));
                 info.appendChild(crear("p", "detalle",
-                    "Responsable: " + (inst.responsable || "-") + " · Tel: " + (inst.telefono || "-") + " · Usuario: " + (inst.nombreUsuario || "-")));
+                    "Responsable: " + (inst.responsable || "-") + " · Tel: " + (inst.telefono || "-") + " · " + (inst.email || "-") + " · Usuario: " + (inst.nombreUsuario || "-")));
                 const acciones = crear("div", "acciones");
                 const aprobar = crear("button", "boton boton-chico", "Aprobar");
                 aprobar.addEventListener("click", function () {

@@ -33,7 +33,7 @@ public class Institucion extends Perfil {
     // ¿Puede publicar capacitaciones? Solo si está activa y el administrador la verificó
     public boolean puedePublicar() {
         return estaActivo() && estadoVerificacion == EstadoVerificacion.VERIFICADA;
-    }
+    } //esto forma parte de una regla de negocio porque yo lo pongo como condicion
 
     public String getNombre() {
         return nombre;

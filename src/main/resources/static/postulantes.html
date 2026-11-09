@@ -88,7 +88,7 @@
             }
             // Cuando el empleador acepta, se habilita el contacto
             if (postulacion.estado === "ACEPTADA") {
-                info.appendChild(crear("p", "detalle", "Contacto: " + persona.telefono));
+                info.appendChild(crear("p", "detalle", "Contacto: " + persona.telefono + (persona.email ? " · " + persona.email : "")));
             }
 
             // Reputación del profesional (se completa cuando llega la respuesta del servidor)

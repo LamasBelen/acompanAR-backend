@@ -17,6 +17,7 @@ public class InstitucionAdminDTO {
     private String nombreUsuario;
     private String responsable;
     private String telefono;
+    private String email;
 
     public Long getId() {
         return id;
@@ -88,6 +89,14 @@ public class InstitucionAdminDTO {
 
     public void setResponsable(String responsable) {
         this.responsable = responsable;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getTelefono() {
