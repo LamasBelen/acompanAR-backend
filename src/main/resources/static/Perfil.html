@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi perfil - acompanAR</title>
+    <title>Mi perfil - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
     <header class="barra">
         <div class="barra-contenido">
-            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <a class="logo" href="index.html">acompañ<span>AR</span></a>
             <nav class="menu" id="menu"></nav>
         </div>
     </header>
 
     <main class="contenedor">
+      <div class="dos-columnas">
         <div class="tarjeta tarjeta-angosta">
             <h1>Mi perfil</h1>
             <p class="subtitulo">Mantené tus datos actualizados.</p>
@@ -70,6 +72,10 @@
 
                     <label for="descripcionExperiencia">Contanos tu experiencia</label>
                     <textarea id="descripcionExperiencia" maxlength="1500"></textarea>
+
+                    <label>Requisitos que cumplís</label>
+                    <div id="requisitosProfesional" class="opciones-requisitos"></div>
+                    <p class="detalle">Los empleadores ven cuántos de los requisitos de su oferta cumplís.</p>
                 </div>
 
                 <!-- Campos que solo ve un empleador -->
@@ -86,13 +92,14 @@
             </form>
         </div>
 
-        <div class="tarjeta tarjeta-angosta" style="margin-top: 20px;" id="tarjetaReputacion">
+        <div class="columna">
+        <div class="tarjeta tarjeta-angosta" id="tarjetaReputacion">
             <h2>Mi reputación</h2>
             <p class="subtitulo">Lo que opinaron de vos las personas con las que trabajaste.</p>
             <div id="reputacion"></div>
         </div>
 
-        <div class="tarjeta tarjeta-angosta" style="margin-top: 20px;">
+        <div class="tarjeta tarjeta-angosta">
             <h2>Dar de baja mi cuenta</h2>
             <p class="subtitulo">
                 Tu cuenta quedará inactiva y no vas a poder ingresar. Tus postulaciones o
@@ -100,6 +107,8 @@
             </p>
             <button type="button" class="boton boton-peligro" id="botonBaja">Darme de baja</button>
         </div>
+        </div>
+      </div>
     </main>
 
     <script src="js/api.js"></script>
@@ -158,6 +167,8 @@
                 document.getElementById("disponibilidad").value = perfil.disponibilidad || "";
                 document.getElementById("aniosExperiencia").value = perfil.aniosExperiencia;
                 document.getElementById("descripcionExperiencia").value = perfil.descripcionExperiencia || "";
+                await llenarCasillasRequisitos(document.getElementById("requisitosProfesional"),
+                    (perfil.requisitosCumplidos || []).map(function (r) { return r.id; }));
             } else {
                 document.getElementById("nombreEmpresa").value = perfil.nombreEmpresa || "";
                 document.getElementById("descripcionPuesto").value = perfil.descripcionPuesto || "";
@@ -183,6 +194,7 @@
                 datos.disponibilidad = document.getElementById("disponibilidad").value.trim();
                 datos.aniosExperiencia = Number(document.getElementById("aniosExperiencia").value);
                 datos.descripcionExperiencia = document.getElementById("descripcionExperiencia").value.trim();
+                datos.idsRequisitos = leerCasillasRequisitos(document.getElementById("requisitosProfesional"));
             } else {
                 url = "/api/empleadores/editar/" + usuario.idEmpleador;
                 datos.nombreEmpresa = document.getElementById("nombreEmpresa").value.trim();
@@ -198,7 +210,7 @@
         });
 
         document.getElementById("botonBaja").addEventListener("click", async function () {
-            if (!confirm("¿Seguro que querés dar de baja tu cuenta? No vas a poder volver a ingresar.")) return;
+            if (!await confirmarAccion("No vas a poder volver a ingresar con esta cuenta.", { titulo: "¿Dar de baja tu cuenta?", textoBoton: "Sí, dar de baja mi cuenta" })) return;
 
             const url = esProfesional
                 ? "/api/profesionales/baja/" + usuario.idProfesional

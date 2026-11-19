@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * Calificación mutua entre profesional y empleador.
- * Regla de negocio: solo se puede calificar cuando la postulación fue ACEPTADA,
+ * Regla de negocio: solo se puede calificar cuando el trabajo fue FINALIZADO (postulación FINALIZADA),
  * solo participan las dos partes de esa postulación, y cada una califica una sola vez.
  */
 @Service
@@ -32,13 +32,16 @@ public class CalificacionService {
     private final CalificacionRepository calificacionRepository;
     private final PostulacionRepository postulacionRepository;
     private final UsuarioRepository usuarioRepository;
+    private final NotificacionService notificacionService;
 
     public CalificacionService(CalificacionRepository calificacionRepository,
                                PostulacionRepository postulacionRepository,
-                               UsuarioRepository usuarioRepository) {
+                               UsuarioRepository usuarioRepository,
+                               NotificacionService notificacionService) {
         this.calificacionRepository = calificacionRepository;
         this.postulacionRepository = postulacionRepository;
         this.usuarioRepository = usuarioRepository;
+        this.notificacionService = notificacionService;
     }
 
     @Transactional
@@ -62,9 +65,9 @@ public class CalificacionService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No participaste en esta postulación");
         }
 
-        if (postulacion.getEstado() != EstadoPostulacion.ACEPTADA) {
+        if (postulacion.getEstado() != EstadoPostulacion.FINALIZADA) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Solo se puede calificar cuando la postulación fue aceptada");
+                    "Solo se puede calificar cuando el trabajo fue finalizado");
         }
         if (calificacionRepository.existsByPostulacionIdAndAutorId(postulacion.getId(), autor.getId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya calificaste esta postulación");
@@ -79,7 +82,14 @@ public class CalificacionService {
                 ? null : dto.getComentario().trim());
         calificacion.setFecha(LocalDate.now());
         calificacion.setEstado(Estado.ACTIVO);
-        return aDTO(calificacionRepository.save(calificacion));
+        calificacion = calificacionRepository.save(calificacion);
+
+        // Aviso para quien recibió la calificación
+        notificacionService.notificar(destinatario,
+                "Recibiste una calificación de " + dto.getPuntaje() + " estrella(s) por «"
+                        + postulacion.getOfertaLaboral().getTitulo() + "»",
+                "perfil.html");
+        return aDTO(calificacion);
     }
 
     // Ids de las postulaciones que el usuario logueado ya calificó (el front los usa para ocultar el botón)

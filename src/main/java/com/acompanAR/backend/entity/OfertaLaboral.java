@@ -1,6 +1,8 @@
 package com.acompanAR.backend.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
+import java.util.Set;
 @Entity
 @Table (name = "ofertas_laborales")
 public class OfertaLaboral {
@@ -11,8 +13,21 @@ public class OfertaLaboral {
     private String titulo;
     @Column(length = 1000)
     private String descripcion;
+    // Otros requisitos, en texto libre (los más comunes se eligen del catálogo, ver requisitosComunes)
     private String requisitos;
     private LocalDate fechaPublicacion;
+
+    // Cuándo empieza el trabajo y cuántas semanas dura. Con eso se calcula el progreso (son opcionales).
+    private LocalDate fechaInicio;
+    private Integer duracionSemanas;
+
+    // Requisitos comunes elegidos del catálogo (relación muchos a muchos, tabla intermedia ofertas_requisitos)
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "ofertas_requisitos",
+            joinColumns = @JoinColumn(name = "fk_oferta"),
+            inverseJoinColumns = @JoinColumn(name = "fk_requisito"))
+    private Set<Requisito> requisitosComunes = new LinkedHashSet<>();
+
     // Baja lógica: una oferta dada de baja queda INACTIVA y deja de mostrarse.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -78,6 +93,28 @@ public class OfertaLaboral {
     public void setEmpleador(Empleador empleador) {
         this.empleador = empleador;
     }
+
+    public LocalDate getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(LocalDate fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public Integer getDuracionSemanas() {
+        return duracionSemanas;
+    }
+
+    public void setDuracionSemanas(Integer duracionSemanas) {
+        this.duracionSemanas = duracionSemanas;
+    }
+
+    public Set<Requisito> getRequisitosComunes() {
+        return requisitosComunes;
+    }
+
+    public void setRequisitosComunes(Set<Requisito> requisitosComunes) {
+        this.requisitosComunes = requisitosComunes;
+    }
 }
-
-

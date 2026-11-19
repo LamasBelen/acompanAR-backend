@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
+ * esta y la otra tienen el command line runner (se ejecuta una sola vez al iniciar el servidor
+ *
  * Al arrancar la aplicación, crea un usuario ADMINISTRADOR si todavía no existe.
  * Es necesario porque no hay ninguna pantalla ni endpoint para crear administradores.
  *

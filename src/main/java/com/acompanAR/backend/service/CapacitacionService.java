@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Lógica de negocio de las capacitaciones (ABM con baja lógica).
+ * tiene la baja lógica.
  * Las publica una institución verificada (solo las suyas) o el administrador (de cualquier institución).
  */
 @Service

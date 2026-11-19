@@ -1,5 +1,9 @@
 package com.acompanAR.backend.dto;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
+import java.util.List;
 import jakarta.validation.constraints.NotBlank;
 
 // Datos que se pueden modificar de una oferta ya publicada.
@@ -36,5 +40,38 @@ public class OfertaLaboralEdicionDTO {
 
     public void setRequisitos(String requisitos) {
         this.requisitos = requisitos;
+    }
+
+    // Requisitos comunes elegidos del catálogo (ids). Opcional.
+    private List<Long> idsRequisitos;
+
+    // Cuándo empieza el trabajo y cuántas semanas dura (opcionales, van juntos). Sirven para mostrar el progreso.
+    private LocalDate fechaInicio;
+    @Min(value = 1, message = "La duración mínima es 1 semana")
+    @Max(value = 52, message = "La duración máxima es 52 semanas")
+    private Integer duracionSemanas;
+
+    public List<Long> getIdsRequisitos() {
+        return idsRequisitos;
+    }
+
+    public void setIdsRequisitos(List<Long> idsRequisitos) {
+        this.idsRequisitos = idsRequisitos;
+    }
+
+    public LocalDate getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(LocalDate fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public Integer getDuracionSemanas() {
+        return duracionSemanas;
+    }
+
+    public void setDuracionSemanas(Integer duracionSemanas) {
+        this.duracionSemanas = duracionSemanas;
     }
 }

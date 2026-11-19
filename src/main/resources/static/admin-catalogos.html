@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instituciones y tipos de profesional - acompanAR</title>
+    <title>Catálogos - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
     <header class="barra">
         <div class="barra-contenido">
-            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <a class="logo" href="index.html">acompañ<span>AR</span></a>
             <nav class="menu" id="menu"></nav>
         </div>
     </header>
 
     <main class="contenedor">
         <div class="cabecera-pagina">
-            <h1>Instituciones y tipos de profesional</h1>
-            <p class="subtitulo">Administrá las listas que usan los formularios de la plataforma.</p>
+            <h1>Catálogos de la plataforma</h1>
+            <p class="subtitulo">Administrá las instituciones, los tipos de profesional y los requisitos comunes de las ofertas.</p>
         </div>
         <div id="mensaje" class="mensaje"></div>
 
@@ -58,6 +59,19 @@
                 </form>
             </div>
             <div id="listaTipos" class="lista"></div>
+
+            <!-- ================= REQUISITOS COMUNES ================= -->
+            <div class="tarjeta" style="margin-top: 30px;">
+                <h2 id="tituloRequisito">Nuevo requisito común</h2>
+                <form id="formRequisito">
+                    <label for="nombreRequisito">Nombre</label>
+                    <input type="text" id="nombreRequisito" required maxlength="100" placeholder="Ej: Registro de conducir">
+
+                    <button type="submit" class="boton" id="botonRequisito">Guardar requisito</button>
+                    <button type="button" class="boton boton-secundario" id="cancelarRequisito" style="display: none;">Cancelar edición</button>
+                </form>
+            </div>
+            <div id="listaRequisitos" class="lista"></div>
         </div>
     </main>
 
@@ -68,6 +82,7 @@
         const mensaje = document.getElementById("mensaje");
         let idInstitucionEditando = null; // null = estamos creando; con un número = editando esa institución
         let idTipoEditando = null;
+        let idRequisitoEditando = null;
 
         async function iniciar() {
             const usuario = await requerirSesion();
@@ -85,6 +100,7 @@
 
             cargarInstituciones();
             cargarTipos();
+            cargarRequisitos();
         }
 
         // ---------------- Instituciones ----------------
@@ -106,7 +122,7 @@
                 info.appendChild(crear("p", "detalle",
                     (inst.tipo === "PUBLICA" ? "Pública" : "Privada") + " · " + nombreLocalidad(inst.localidad)));
                 const acciones = crear("div", "acciones");
-                acciones.appendChild(crear("span", "estado estado-" + inst.estadoVerificacion, inst.estadoVerificacion));
+                acciones.appendChild(crearEtiquetaEstado(inst.estadoVerificacion));
                 const editar = crear("button", "boton boton-chico boton-secundario", "Editar");
                 editar.addEventListener("click", function () { empezarEdicionInstitucion(inst); });
                 const baja = crear("button", "boton boton-chico boton-peligro", "Dar de baja");
@@ -160,7 +176,7 @@
         });
 
         async function bajaInstitucion(id) {
-            if (!confirm("¿Dar de baja esta institución? Ya no se podrá elegir para nuevas capacitaciones.")) return;
+            if (!await confirmarAccion("Ya no se podrá elegir para nuevas capacitaciones.", { titulo: "¿Dar de baja esta institución?", textoBoton: "Sí, dar de baja" })) return;
             const resultado = await pedir("/api/instituciones/baja/" + id, "PUT");
             if (resultado.ok) {
                 mostrarMensaje(mensaje, "Institución dada de baja.", "ok");
@@ -234,13 +250,88 @@
         });
 
         async function bajaTipo(id) {
-            if (!confirm("¿Dar de baja este tipo? Ya no se podrá elegir al registrarse.")) return;
+            if (!await confirmarAccion("Ya no se podrá elegir al registrarse.", { titulo: "¿Dar de baja este tipo de profesional?", textoBoton: "Sí, dar de baja" })) return;
             const resultado = await pedir("/api/tipos-profesional/baja/" + id, "PUT");
             if (resultado.ok) {
                 mostrarMensaje(mensaje, "Tipo de profesional dado de baja.", "ok");
                 cargarTipos();
             } else {
                 mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo dar de baja el tipo de profesional."), "error");
+            }
+        }
+
+        // ---------------- Requisitos comunes ----------------
+        async function cargarRequisitos() {
+            const lista = document.getElementById("listaRequisitos");
+            const resultado = await pedir("/api/requisitos");
+            if (!resultado.ok) {
+                mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudieron cargar los requisitos."), "error");
+                return;
+            }
+            lista.innerHTML = "";
+            if (resultado.datos.length === 0) {
+                lista.appendChild(crear("p", "vacio", "No hay requisitos cargados."));
+            }
+            resultado.datos.forEach(function (requisito) {
+                const tarjeta = crear("div", "tarjeta item");
+                const info = crear("div");
+                info.appendChild(crear("h2", "", requisito.nombre));
+                const acciones = crear("div", "acciones");
+                const editar = crear("button", "boton boton-chico boton-secundario", "Editar");
+                editar.addEventListener("click", function () { empezarEdicionRequisito(requisito); });
+                const baja = crear("button", "boton boton-chico boton-peligro", "Dar de baja");
+                baja.addEventListener("click", function () { bajaRequisito(requisito.id); });
+                acciones.appendChild(editar);
+                acciones.appendChild(baja);
+                tarjeta.appendChild(info);
+                tarjeta.appendChild(acciones);
+                lista.appendChild(tarjeta);
+            });
+        }
+
+        function empezarEdicionRequisito(requisito) {
+            idRequisitoEditando = requisito.id;
+            document.getElementById("tituloRequisito").textContent = "Editar requisito común";
+            document.getElementById("nombreRequisito").value = requisito.nombre;
+            document.getElementById("botonRequisito").textContent = "Guardar cambios";
+            document.getElementById("cancelarRequisito").style.display = "inline-block";
+            document.getElementById("formRequisito").scrollIntoView();
+        }
+
+        function terminarEdicionRequisito() {
+            idRequisitoEditando = null;
+            document.getElementById("formRequisito").reset();
+            document.getElementById("tituloRequisito").textContent = "Nuevo requisito común";
+            document.getElementById("botonRequisito").textContent = "Guardar requisito";
+            document.getElementById("cancelarRequisito").style.display = "none";
+        }
+
+        document.getElementById("cancelarRequisito").addEventListener("click", terminarEdicionRequisito);
+
+        document.getElementById("formRequisito").addEventListener("submit", async function (evento) {
+            evento.preventDefault();
+            const datos = { nombre: document.getElementById("nombreRequisito").value.trim() };
+            const resultado = idRequisitoEditando === null
+                ? await pedir("/api/requisitos/nuevo", "POST", datos)
+                : await pedir("/api/requisitos/editar/" + idRequisitoEditando, "PUT", datos);
+            if (resultado.ok) {
+                mostrarMensaje(mensaje, "Requisito guardado.", "ok");
+                terminarEdicionRequisito();
+                cargarRequisitos();
+            } else {
+                mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo guardar el requisito."), "error");
+            }
+        });
+
+        async function bajaRequisito(id) {
+            if (!await confirmarAccion("Ya no se va a ofrecer al publicar ofertas nuevas. Las ofertas que ya lo tienen lo conservan.",
+                    { titulo: "¿Dar de baja este requisito?", textoBoton: "Sí, dar de baja" })) return;
+            const resultado = await pedir("/api/requisitos/baja/" + id, "PUT");
+            if (resultado.ok) {
+                mostrarMensaje(mensaje, "Requisito dado de baja.", "ok");
+                cargarRequisitos();
+            } else {
+                mostrarMensaje(mensaje, mensajeDeError(resultado, "No se pudo dar de baja el requisito."), "error");
             }
         }
 

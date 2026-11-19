@@ -29,13 +29,16 @@ public class InscripcionService {
     private final InscripcionRepository inscripcionRepository;
     private final ProfesionalRepository profesionalRepository;
     private final CapacitacionRepository capacitacionRepository;
+    private final NotificacionService notificacionService;
 
     public InscripcionService(InscripcionRepository inscripcionRepository,
                               ProfesionalRepository profesionalRepository,
-                              CapacitacionRepository capacitacionRepository) {
+                              CapacitacionRepository capacitacionRepository,
+                              NotificacionService notificacionService) {
         this.inscripcionRepository = inscripcionRepository;
         this.profesionalRepository = profesionalRepository;
         this.capacitacionRepository = capacitacionRepository;
+        this.notificacionService = notificacionService;
     }
 
     @Transactional
@@ -61,7 +64,15 @@ public class InscripcionService {
         inscripcion.setCapacitacion(capacitacion);
         inscripcion.setFechaInscripcion(LocalDate.now());
         inscripcion.setEstado(EstadoInscripcionCapacitacion.CONFIRMADA); // la inscripción es directa
-        return inscripcionRepository.save(inscripcion);
+        inscripcion = inscripcionRepository.save(inscripcion);
+
+        // Aviso para la institución que publicó la capacitación (las cargadas por el admin pueden no tener cuenta)
+        if (capacitacion.getInstitucion() != null) {
+            notificacionService.notificar(capacitacion.getInstitucion().getUsuario(),
+                    profesional.nombreCompleto() + " se inscribió en «" + capacitacion.getTitulo() + "»",
+                    "admin-capacitaciones.html");
+        }
+        return inscripcion;
     }
 
     public List<Inscripcion> listarTodas() {

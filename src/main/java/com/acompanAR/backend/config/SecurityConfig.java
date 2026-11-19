@@ -53,12 +53,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/empleadores/registro").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/instituciones/registro").permitAll()
                         // Listas necesarias para el formulario de registro (localidades y tipos de profesional)
-                        .requestMatchers(HttpMethod.GET, "/api/catalogos/**", "/api/tipos-profesional").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/catalogos/**", "/api/tipos-profesional", "/api/requisitos").permitAll()
 
                         // ---- Solo PROFESIONAL ----
                         .requestMatchers(HttpMethod.POST, "/api/postulaciones/nueva").hasRole("PROFESIONAL")
                         .requestMatchers(HttpMethod.PUT, "/api/postulaciones/cancelar/**").hasRole("PROFESIONAL")
                         .requestMatchers(HttpMethod.GET, "/api/postulaciones/profesional/**").hasRole("PROFESIONAL")
+                        .requestMatchers(HttpMethod.GET, "/api/postulaciones/*/progreso").hasAnyRole("PROFESIONAL", "EMPLEADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/postulaciones/finalizar/**").hasAnyRole("PROFESIONAL", "EMPLEADOR")
+
+                        // ---- Mensajería entre el profesional y el empleador de una postulación aceptada ----
+                        .requestMatchers("/api/mensajes/**").hasAnyRole("PROFESIONAL", "EMPLEADOR")
 
                         // ---- Postulaciones: el empleador las ve y responde ----
                         .requestMatchers(HttpMethod.PUT, "/api/postulaciones/aceptar/**", "/api/postulaciones/rechazar/**").hasRole("EMPLEADOR")
@@ -92,6 +97,8 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/tipos-profesional/nuevo").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/tipos-profesional/editar/**", "/api/tipos-profesional/baja/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/api/requisitos/nuevo").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/requisitos/editar/**", "/api/requisitos/baja/**").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.POST, "/api/instituciones/nueva").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/instituciones/editar/**", "/api/instituciones/baja/**").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/instituciones/verificar/**", "/api/instituciones/rechazar/**").hasRole("ADMINISTRADOR")
@@ -113,6 +120,10 @@ public class SecurityConfig {
 
                         // ---- Listado de empleadores: profesionales y admin ----
                         .requestMatchers(HttpMethod.GET, "/api/empleadores").hasAnyRole("PROFESIONAL", "ADMINISTRADOR")
+
+                        // ---- Perfiles con reputación: el empleador ve a sus postulantes; el profesional ve a los empleadores ----
+                        .requestMatchers(HttpMethod.GET, "/api/perfiles/profesional/**").hasAnyRole("EMPLEADOR", "ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.GET, "/api/perfiles/empleador/**").hasAnyRole("PROFESIONAL", "ADMINISTRADOR")
 
                         // ---- Todo lo demás requiere estar logueado ----
                         .anyRequest().authenticated()

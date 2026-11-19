@@ -2,6 +2,9 @@ package com.acompanAR.backend.entity;
 
 import jakarta.persistence.*;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 // Hereda de Perfil: id, estado, usuario y persona. Acá solo van los datos propios del profesional.
 @Entity
 @Table(name = "profesionales")
@@ -24,6 +27,14 @@ public class Profesional extends Perfil {
     // Es única: dos profesionales no pueden tener el mismo número (puede quedar vacía/null)
     @Column(length = 20, unique = true)
     private String matricula;
+
+    // Requisitos del catálogo que el profesional dice cumplir (matrícula, movilidad propia...).
+    // Se comparan con los de cada oferta para mostrar "cumplís 2 de 3 requisitos".
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "profesionales_requisitos",
+            joinColumns = @JoinColumn(name = "fk_profesional"),
+            inverseJoinColumns = @JoinColumn(name = "fk_requisito"))
+    private Set<Requisito> requisitosCumplidos = new LinkedHashSet<>();
 
     @Override
     public Rol rolDelPerfil() {
@@ -68,5 +79,13 @@ public class Profesional extends Perfil {
 
     public void setMatricula(String matricula) {
         this.matricula = matricula;
+    }
+
+    public Set<Requisito> getRequisitosCumplidos() {
+        return requisitosCumplidos;
+    }
+
+    public void setRequisitosCumplidos(Set<Requisito> requisitosCumplidos) {
+        this.requisitosCumplidos = requisitosCumplidos;
     }
 }

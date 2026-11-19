@@ -1,4 +1,4 @@
-# acompanAR
+# acompañAR
 
 Plataforma para conectar enfermeros/as y acompañantes terapéuticos con empleadores en Río Grande,
 y publicar capacitaciones de instituciones públicas y privadas.

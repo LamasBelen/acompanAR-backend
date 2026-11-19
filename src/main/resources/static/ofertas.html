@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ofertas laborales - acompanAR</title>
+    <title>Ofertas laborales - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
     <header class="barra">
         <div class="barra-contenido">
-            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <a class="logo" href="index.html">acompañ<span>AR</span></a>
             <nav class="menu" id="menu"></nav>
         </div>
     </header>
@@ -21,7 +22,31 @@
         </div>
 
         <div id="mensaje" class="mensaje"></div>
-        <div id="lista" class="lista"></div>
+        <div class="con-lateral">
+            <aside class="filtros" id="filtros" style="display: none;">
+                <h2>Filtrar ofertas</h2>
+                <label for="fBuscar">Buscar</label>
+                <input type="search" id="fBuscar" placeholder="Título, empresa o palabra clave" maxlength="80">
+
+                <label for="fLocalidad">Localidad del empleador</label>
+                <select id="fLocalidad"></select>
+
+                <label for="fOrden">Ordenar por</label>
+                <select id="fOrden">
+                    <option value="recientes">Más recientes</option>
+                    <option value="coincidencia">Más requisitos que cumplo</option>
+                </select>
+
+                <label class="casilla"><input type="checkbox" id="fCumplo"> Solo las que cumplo completas</label>
+                <label class="casilla"><input type="checkbox" id="fOcultar"> Ocultar las que ya me postulé</label>
+
+                <button type="button" class="boton boton-chico boton-secundario boton-ancho" id="fLimpiar">Limpiar filtros</button>
+            </aside>
+            <section>
+                <p class="detalle" id="contador"></p>
+                <div id="lista" class="lista"></div>
+            </section>
+        </div>
     </main>
 
     <script src="js/api.js"></script>
@@ -31,6 +56,9 @@
         const lista = document.getElementById("lista");
         const mensaje = document.getElementById("mensaje");
         let usuario = null;
+        let misRequisitos = [];
+        let todas = [];                 // todas las ofertas que trajo el servidor
+        let yaPostulado = new Set();    // ids de ofertas a las que ya me postulé
 
         async function cargar() {
             usuario = await requerirSesion();
@@ -42,6 +70,10 @@
                 return;
             }
 
+            // Requisitos que declaró cumplir este profesional (para marcar cuáles cumple en cada oferta)
+            const miPerfil = await pedir("/api/profesionales/" + usuario.idProfesional);
+            misRequisitos = miPerfil.ok ? (miPerfil.datos.requisitosCumplidos || []) : [];
+
             const ofertas = await pedir("/api/ofertas");
             const misPostulaciones = await pedir("/api/postulaciones/profesional/" + usuario.idProfesional);
 
@@ -51,7 +83,7 @@
             }
 
             // Ids de las ofertas a las que ya me postulé (y la postulación sigue vigente)
-            const yaPostulado = new Set();
+            yaPostulado = new Set();
             if (misPostulaciones.ok) {
                 misPostulaciones.datos.forEach(function (p) {
                     if (p.estado !== "CANCELADA") {
@@ -60,15 +92,79 @@
                 });
             }
 
+            todas = ofertas.datos;
+            await cargarLocalidades();
+            const select = document.getElementById("fLocalidad");
+            llenarSelect(select, localidadesGuardadas.map(function (l) { return { valor: l.codigo, texto: l.nombre }; }), "Todas las localidades");
+            if (todas.length > 0) document.getElementById("filtros").style.display = "block";
+            mostrar();
+        }
+
+        // Texto en minúsculas y sin tildes, para que "enfermería" encuentre "Enfermeria"
+        function normalizar(texto) {
+            return (texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function localidadDe(oferta) {
+            return oferta.empleador && oferta.empleador.persona ? oferta.empleador.persona.localidad : null;
+        }
+
+        // Aplica los filtros y el orden elegidos y vuelve a dibujar la lista
+        function mostrar() {
+            const buscar = normalizar(document.getElementById("fBuscar").value.trim());
+            const localidad = document.getElementById("fLocalidad").value;
+            const soloCompletas = document.getElementById("fCumplo").checked;
+            const ocultar = document.getElementById("fOcultar").checked;
+            const orden = document.getElementById("fOrden").value;
+
+            const cumplidos = function (o) { return calcularCoincidencia(o.requisitosComunes, misRequisitos).cumplidos.length; };
+            let visibles = todas.filter(function (o) {
+                if (buscar) {
+                    const empresa = o.empleador ? o.empleador.nombreEmpresa : "";
+                    const texto = normalizar(o.titulo + " " + o.descripcion + " " + (o.requisitos || "") + " " + empresa);
+                    if (texto.indexOf(buscar) === -1) return false;
+                }
+                if (localidad && localidadDe(o) !== localidad) return false;
+                if (soloCompletas && calcularCoincidencia(o.requisitosComunes, misRequisitos).faltantes.length > 0) return false;
+                if (ocultar && yaPostulado.has(o.id)) return false;
+                return true;
+            });
+            if (orden === "coincidencia") {
+                visibles = visibles.slice().sort(function (a, b) { return cumplidos(b) - cumplidos(a) || b.id - a.id; });
+            } else {
+                visibles = visibles.slice().sort(function (a, b) {
+                    return (b.fechaPublicacion || "").localeCompare(a.fechaPublicacion || "") || b.id - a.id;
+                });
+            }
+
             lista.innerHTML = "";
-            if (ofertas.datos.length === 0) {
+            const contador = document.getElementById("contador");
+            if (todas.length === 0) {
+                contador.textContent = "";
                 lista.appendChild(crear("p", "vacio", "Por ahora no hay ofertas publicadas."));
                 return;
             }
-            ofertas.datos.forEach(function (oferta) {
+            contador.textContent = visibles.length + " de " + todas.length + " oferta(s)";
+            if (visibles.length === 0) {
+                lista.appendChild(crear("p", "vacio", "Ninguna oferta coincide con esos filtros. Probá con menos condiciones."));
+                return;
+            }
+            visibles.forEach(function (oferta) {
                 lista.appendChild(armarTarjeta(oferta, yaPostulado.has(oferta.id)));
             });
         }
+
+        ["fBuscar", "fLocalidad", "fOrden", "fCumplo", "fOcultar"].forEach(function (id) {
+            document.getElementById(id).addEventListener(id === "fBuscar" ? "input" : "change", mostrar);
+        });
+        document.getElementById("fLimpiar").addEventListener("click", function () {
+            document.getElementById("fBuscar").value = "";
+            document.getElementById("fLocalidad").value = "";
+            document.getElementById("fOrden").value = "recientes";
+            document.getElementById("fCumplo").checked = false;
+            document.getElementById("fOcultar").checked = false;
+            mostrar();
+        });
 
         function armarTarjeta(oferta, postulado) {
             const tarjeta = crear("div", "tarjeta item");
@@ -78,20 +174,80 @@
             const empresa = oferta.empleador ? oferta.empleador.nombreEmpresa : "";
             info.appendChild(crear("p", "detalle", empresa + " · Publicada el " + formatearFecha(oferta.fechaPublicacion)));
             info.appendChild(crear("p", "", oferta.descripcion));
-            if (oferta.requisitos) {
-                info.appendChild(crear("p", "detalle", "Requisitos: " + oferta.requisitos));
+            agregarDetallesOferta(info, oferta, misRequisitos, false);
+            // Antes de postularse, el profesional puede ver las estrellas y opiniones del empleador
+            if (oferta.empleador && oferta.empleador.usuario) {
+                const reputacion = crear("p", "detalle", "Reputación del empleador: ...");
+                info.appendChild(reputacion);
+                obtenerReputacion(oferta.empleador.usuario.id).then(function (r) {
+                    reputacion.textContent = "Reputación del empleador: " + textoReputacion(r);
+                });
+                agregarOpiniones(info, oferta.empleador.usuario.id);
             }
 
             const acciones = crear("div", "acciones");
             const boton = crear("button", "boton boton-chico", postulado ? "Ya te postulaste" : "Postularme");
             boton.disabled = postulado;
-            boton.addEventListener("click", function () { postularse(oferta.id, boton); });
+            boton.addEventListener("click", async function () {
+                // Antes de enviar, se muestra un resumen de la oferta y de lo que pasa después
+                const confirmado = await confirmarAccion(
+                    "Revisá el resumen antes de enviar tu postulación.",
+                    { titulo: "¿Postularte a esta oferta?", textoBoton: "Sí, postularme", peligro: false,
+                      contenido: armarResumenPostulacion(oferta) });
+                if (confirmado) postularse(oferta.id, boton);
+            });
             acciones.appendChild(boton);
+            if (oferta.empleador) {
+                acciones.appendChild(crear("a", "boton-enlace", "Ver perfil del empleador",
+                    { href: "perfil-publico.html?tipo=empleador&id=" + oferta.empleador.id }));
+            }
             agregarBotonDenuncia(acciones, info, "OFERTA", oferta.id);
 
-            tarjeta.appendChild(info);
+            tarjeta.appendChild(conAvatar(crearAvatar(empresa), info));
             tarjeta.appendChild(acciones);
             return tarjeta;
+        }
+
+        // Resumen que se muestra en la ventana de confirmación al postularse
+        function armarResumenPostulacion(oferta) {
+            const resumen = crear("div", "resumen-postulacion");
+            const empresa = oferta.empleador ? oferta.empleador.nombreEmpresa : "";
+
+            const datos = crear("div", "resumen-bloque");
+            datos.appendChild(crear("strong", "", oferta.titulo));
+            if (empresa) datos.appendChild(crear("span", "detalle", empresa));
+            if (oferta.fechaInicio && oferta.duracionSemanas) {
+                datos.appendChild(crear("span", "detalle",
+                    "Inicio: " + formatearFecha(oferta.fechaInicio) + " · Duración: " + oferta.duracionSemanas +
+                    (oferta.duracionSemanas === 1 ? " semana" : " semanas")));
+            }
+            resumen.appendChild(datos);
+
+            // Requisitos que pide la oferta y cuántos cumple este profesional (solo informativo)
+            const coincidencia = calcularCoincidencia(oferta.requisitosComunes, misRequisitos);
+            if (coincidencia.total > 0) {
+                const bloque = crear("div", "resumen-bloque");
+                bloque.appendChild(crear("strong", "", "Cumplís " + coincidencia.cumplidos.length + " de " + coincidencia.total + " requisitos"));
+                const etiquetas = crear("div", "etiquetas");
+                coincidencia.cumplidos.forEach(function (r) { etiquetas.appendChild(crear("span", "etiqueta cumple", "✓ " + r.nombre)); });
+                coincidencia.faltantes.forEach(function (r) { etiquetas.appendChild(crear("span", "etiqueta falta", "Falta: " + r.nombre)); });
+                bloque.appendChild(etiquetas);
+                resumen.appendChild(bloque);
+            }
+
+            const pasos = crear("div", "resumen-bloque");
+            pasos.appendChild(crear("strong", "", "¿Qué pasa después?"));
+            const lista = crear("ul", "resumen-pasos");
+            [
+                "El empleador recibe un aviso y puede ver tu perfil, tu experiencia y tus calificaciones.",
+                "Si te acepta, te llega una notificación, se habilita su contacto y se abre un chat en \"Mensajes\" para que coordinen.",
+                "Vas a poder seguir el avance del trabajo semana por semana.",
+                "Cuando el trabajo termina, los dos se califican.",
+                "Mientras tu postulación esté pendiente, podés cancelarla desde \"Mis postulaciones\"."
+            ].forEach(function (texto) { lista.appendChild(crear("li", "", texto)); });
+            pasos.appendChild(lista);
+            resumen.appendChild(pasos);
+            return resumen;
         }
 
         async function postularse(idOferta, boton) {

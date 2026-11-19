@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis ofertas - acompanAR</title>
+    <title>Mis ofertas - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
     <header class="barra">
         <div class="barra-contenido">
-            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <a class="logo" href="index.html">acompañ<span>AR</span></a>
             <nav class="menu" id="menu"></nav>
         </div>
     </header>
@@ -24,6 +25,31 @@
         </div>
 
         <div id="mensaje" class="mensaje"></div>
+
+        <div class="barra-filtros" id="filtros" style="display: none;">
+            <div>
+                <label for="fBuscar">Buscar</label>
+                <input type="search" id="fBuscar" placeholder="Título de la oferta" maxlength="80">
+            </div>
+            <div>
+                <label for="fPeriodo">Publicadas</label>
+                <select id="fPeriodo">
+                    <option value="0">En cualquier momento</option>
+                    <option value="7">En la última semana</option>
+                    <option value="14">En las últimas 2 semanas</option>
+                    <option value="30">En el último mes</option>
+                </select>
+            </div>
+            <div>
+                <label for="fOrden">Ordenar</label>
+                <select id="fOrden">
+                    <option value="nuevas">Más nuevas primero</option>
+                    <option value="viejas">Más viejas primero</option>
+                </select>
+            </div>
+            <button type="button" class="boton boton-chico boton-secundario" id="fLimpiar">Limpiar</button>
+        </div>
+        <p class="detalle" id="contador"></p>
         <div id="lista" class="lista"></div>
     </main>
 
@@ -34,6 +60,7 @@
         const lista = document.getElementById("lista");
         const mensaje = document.getElementById("mensaje");
         let usuario = null;
+        let todas = [];
 
         async function cargar() {
             usuario = await requerirSesion();
@@ -50,15 +77,65 @@
                 return;
             }
 
+            todas = resultado.datos;
+            if (todas.length > 0) document.getElementById("filtros").style.display = "flex";
+            mostrar();
+        }
+
+        function normalizar(texto) {
+            return (texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // Aplica la búsqueda, el período y el orden. Al entrar se ven primero las más nuevas.
+        function mostrar() {
+            const buscar = normalizar(document.getElementById("fBuscar").value.trim());
+            const dias = parseInt(document.getElementById("fPeriodo").value, 10);
+            const masNuevasPrimero = document.getElementById("fOrden").value === "nuevas";
+
+            // Fecha límite en texto AAAA-MM-DD (las fechas del servidor tienen ese formato)
+            let desde = "";
+            if (dias > 0) {
+                const limite = new Date();
+                limite.setDate(limite.getDate() - dias);
+                desde = limite.getFullYear() + "-" + String(limite.getMonth() + 1).padStart(2, "0") + "-" +
+                    String(limite.getDate()).padStart(2, "0");
+            }
+
+            const visibles = todas.filter(function (o) {
+                if (buscar && normalizar(o.titulo).indexOf(buscar) === -1) return false;
+                if (desde && (o.fechaPublicacion || "") < desde) return false;
+                return true;
+            }).sort(function (a, b) {
+                const cmp = (a.fechaPublicacion || "").localeCompare(b.fechaPublicacion || "") || a.id - b.id;
+                return masNuevasPrimero ? -cmp : cmp;
+            });
+
             lista.innerHTML = "";
-            if (resultado.datos.length === 0) {
+            const contador = document.getElementById("contador");
+            if (todas.length === 0) {
+                contador.textContent = "";
                 lista.appendChild(crear("p", "vacio", "Todavía no publicaste ninguna oferta."));
                 return;
             }
-            resultado.datos.forEach(function (oferta) {
+            contador.textContent = visibles.length + " de " + todas.length + " oferta(s)";
+            if (visibles.length === 0) {
+                lista.appendChild(crear("p", "vacio", "Ninguna oferta coincide con esos filtros."));
+                return;
+            }
+            visibles.forEach(function (oferta) {
                 lista.appendChild(armarTarjeta(oferta));
             });
         }
+
+        ["fBuscar", "fPeriodo", "fOrden"].forEach(function (id) {
+            document.getElementById(id).addEventListener(id === "fBuscar" ? "input" : "change", mostrar);
+        });
+        document.getElementById("fLimpiar").addEventListener("click", function () {
+            document.getElementById("fBuscar").value = "";
+            document.getElementById("fPeriodo").value = "0";
+            document.getElementById("fOrden").value = "nuevas";
+            mostrar();
+        });
 
         function armarTarjeta(oferta) {
             const tarjeta = crear("div", "tarjeta item");
@@ -67,9 +144,7 @@
             info.appendChild(crear("h2", "", oferta.titulo));
             info.appendChild(crear("p", "detalle", "Publicada el " + formatearFecha(oferta.fechaPublicacion)));
             info.appendChild(crear("p", "", oferta.descripcion));
-            if (oferta.requisitos) {
-                info.appendChild(crear("p", "detalle", "Requisitos: " + oferta.requisitos));
-            }
+            agregarDetallesOferta(info, oferta);
 
             const acciones = crear("div", "acciones");
             acciones.appendChild(crear("a", "boton boton-chico", "Ver postulantes", { href: "postulantes.html?oferta=" + oferta.id }));
@@ -85,7 +160,7 @@
         }
 
         async function darDeBaja(idOferta) {
-            if (!confirm("¿Querés dar de baja esta oferta? Ya no la van a ver los profesionales.")) return;
+            if (!await confirmarAccion("Ya no la van a ver los profesionales.", { titulo: "¿Dar de baja esta oferta?", textoBoton: "Sí, dar de baja" })) return;
 
             const resultado = await pedir("/api/ofertas/baja/" + idOferta, "PUT");
             if (resultado.ok) {

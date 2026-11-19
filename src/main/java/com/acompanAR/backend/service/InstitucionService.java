@@ -35,12 +35,15 @@ public class InstitucionService {
     private final PersonaRepository personaRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NotificacionService notificacionService;
 
     public InstitucionService(InstitucionRepository institucionRepository,
                               CapacitacionRepository capacitacionRepository,
                               PersonaRepository personaRepository,
                               UsuarioRepository usuarioRepository,
-                              PasswordEncoder passwordEncoder) {
+                              PasswordEncoder passwordEncoder,
+                              NotificacionService notificacionService) {
+        this.notificacionService = notificacionService;
         this.institucionRepository = institucionRepository;
         this.capacitacionRepository = capacitacionRepository;
         this.personaRepository = personaRepository;
@@ -128,7 +131,10 @@ public class InstitucionService {
         institucion.setLocalidad(dto.getLocalidad());
         institucion.setEstado(Estado.ACTIVO);
         institucion.setEstadoVerificacion(EstadoVerificacion.VERIFICADA);
-        return institucionRepository.save(institucion);
+        institucion = institucionRepository.save(institucion);
+        notificacionService.notificar(institucion.getUsuario(),
+                "Tu institución fue verificada. Ya podés publicar capacitaciones.", "capacitacion-form.html");
+        return institucion;
     }
 
     @Transactional
@@ -168,7 +174,10 @@ public class InstitucionService {
                     "Solo se puede rechazar una solicitud pendiente. Si ya fue verificada, dala de baja.");
         }
         institucion.setEstadoVerificacion(EstadoVerificacion.RECHAZADA);
-        return institucionRepository.save(institucion);
+        institucion = institucionRepository.save(institucion);
+        notificacionService.notificar(institucion.getUsuario(),
+                "Tu solicitud de verificación fue rechazada. No vas a poder publicar capacitaciones.", "inicio.html");
+        return institucion;
     }
 
     // Baja lógica: la institución, su usuario (ya no puede ingresar) y sus capacitaciones activas quedan INACTIVOS

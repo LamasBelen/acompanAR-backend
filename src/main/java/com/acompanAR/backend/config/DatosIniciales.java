@@ -5,7 +5,9 @@ import com.acompanAR.backend.entity.EstadoVerificacion;
 import com.acompanAR.backend.entity.Institucion;
 import com.acompanAR.backend.entity.Localidad;
 import com.acompanAR.backend.entity.TipoInstitucion;
+import com.acompanAR.backend.entity.Requisito;
 import com.acompanAR.backend.entity.TipoProfesional;
+import com.acompanAR.backend.repository.RequisitoRepository;
 import com.acompanAR.backend.repository.InstitucionRepository;
 import com.acompanAR.backend.repository.TipoProfesionalRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -34,6 +36,26 @@ public class DatosIniciales {
                 repository.save(tipo);
             }
             System.out.println(">>> Tipos de profesional iniciales cargados");
+        };
+    }
+
+    // Requisitos más comunes que piden los empleadores (el administrador puede sumar más)
+    @Bean
+    CommandLineRunner cargarRequisitos(RequisitoRepository repository) {
+        return args -> {
+            if (repository.count() > 0) {
+                return;
+            }
+            for (String nombre : new String[]{
+                    "Matrícula habilitante", "Movilidad propia", "Experiencia comprobable", "Referencias laborales",
+                    "Curso de cuidador/a", "Curso de RCP y primeros auxilios", "Disponibilidad fines de semana",
+                    "Disponibilidad nocturna", "Certificado de antecedentes", "Vacunas al día"}) {
+                Requisito requisito = new Requisito();
+                requisito.setNombre(nombre);
+                requisito.setEstado(Estado.ACTIVO);
+                repository.save(requisito);
+            }
+            System.out.println(">>> Requisitos iniciales cargados");
         };
     }
 

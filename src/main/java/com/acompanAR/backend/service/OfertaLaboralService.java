@@ -25,11 +25,25 @@ public class OfertaLaboralService {
 
     private final OfertaLaboralRepository ofertaLaboralRepository;
     private final EmpleadorRepository empleadorRepository;
+    private final RequisitoService requisitoService;
 
     public OfertaLaboralService(OfertaLaboralRepository ofertaLaboralRepository,
-                                EmpleadorRepository empleadorRepository) {
+                                EmpleadorRepository empleadorRepository,
+                                RequisitoService requisitoService) {
         this.ofertaLaboralRepository = ofertaLaboralRepository;
         this.empleadorRepository = empleadorRepository;
+        this.requisitoService = requisitoService;
+    }
+
+    // Regla: la fecha de inicio y la duración van juntas (o no se carga ninguna) y la fecha no puede ser pasada
+    private void validarPeriodo(LocalDate fechaInicio, Integer duracionSemanas, boolean esNueva) {
+        if ((fechaInicio == null) != (duracionSemanas == null)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Para mostrar el progreso hay que indicar la fecha de inicio y la duración en semanas (o dejar ambas vacías)");
+        }
+        if (esNueva && fechaInicio != null && fechaInicio.isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de inicio no puede ser anterior a hoy");
+        }
     }
 
     private Empleador buscarEmpleador(Long id) {
@@ -47,6 +61,7 @@ public class OfertaLaboralService {
     @Transactional
     public OfertaLaboral publicar(OfertaLaboralRegistroDTO dto, Authentication authentication) {
         Empleador empleador = buscarEmpleador(dto.getIdEmpleador());
+        validarPeriodo(dto.getFechaInicio(), dto.getDuracionSemanas(), true);
 
         // Un empleador solo puede publicar ofertas a su propio nombre
         verificarDuenio(empleador, authentication);
@@ -55,6 +70,9 @@ public class OfertaLaboralService {
         oferta.setTitulo(dto.getTitulo());
         oferta.setDescripcion(dto.getDescripcion());
         oferta.setRequisitos(dto.getRequisitos());
+        oferta.setRequisitosComunes(requisitoService.buscarActivos(dto.getIdsRequisitos()));
+        oferta.setFechaInicio(dto.getFechaInicio());
+        oferta.setDuracionSemanas(dto.getDuracionSemanas());
         // La fecha y el estado los pone el sistema, no el usuario
         oferta.setFechaPublicacion(LocalDate.now());
         oferta.setEstado(Estado.ACTIVO);
@@ -94,6 +112,11 @@ public class OfertaLaboralService {
         oferta.setTitulo(dto.getTitulo());
         oferta.setDescripcion(dto.getDescripcion());
         oferta.setRequisitos(dto.getRequisitos());
+        // Al editar se permite mantener una fecha que ya pasó (el trabajo puede estar en curso)
+        validarPeriodo(dto.getFechaInicio(), dto.getDuracionSemanas(), false);
+        oferta.setRequisitosComunes(requisitoService.buscarActivos(dto.getIdsRequisitos()));
+        oferta.setFechaInicio(dto.getFechaInicio());
+        oferta.setDuracionSemanas(dto.getDuracionSemanas());
         return ofertaLaboralRepository.save(oferta);
     }
 

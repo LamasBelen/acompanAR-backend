@@ -1,6 +1,7 @@
 package com.acompanAR.backend.controller;
 
 import com.acompanAR.backend.dto.PostulacionRegistroDTO;
+import com.acompanAR.backend.dto.ProgresoTrabajoDTO;
 import com.acompanAR.backend.entity.Postulacion;
 import com.acompanAR.backend.service.PostulacionService;
 import jakarta.validation.Valid;
@@ -43,6 +44,12 @@ public class PostulacionesController {
         return postulacionService.listarPorProfesional(idProfesional, authentication);
     }
 
+    // Progreso semana por semana de un trabajo aceptado (lo ven el profesional y el empleador)
+    @GetMapping("/{id}/progreso")
+    public ProgresoTrabajoDTO progreso(@PathVariable Long id, Authentication authentication) {
+        return postulacionService.progreso(id, authentication);
+    }
+
     @PutMapping("/aceptar/{id}")
     public Postulacion aceptar(@PathVariable Long id, Authentication authentication) {
         return postulacionService.aceptar(id, authentication);
@@ -51,6 +58,12 @@ public class PostulacionesController {
     @PutMapping("/rechazar/{id}")
     public Postulacion rechazar(@PathVariable Long id, Authentication authentication) {
         return postulacionService.rechazar(id, authentication);
+    }
+
+    // Cualquiera de las dos partes da por terminado un trabajo aceptado (habilita la calificación)
+    @PutMapping("/finalizar/{id}")
+    public Postulacion finalizar(@PathVariable Long id, Authentication authentication) {
+        return postulacionService.finalizar(id, authentication);
     }
 
     @PutMapping("/cancelar/{id}")

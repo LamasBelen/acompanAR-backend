@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio - acompanAR</title>
+    <title>Inicio - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
@@ -104,23 +105,13 @@
             };
             panel.appendChild(resumen([
                 { numero: contar(postulaciones, "PENDIENTE"), rotulo: "Postulaciones pendientes" },
-                { numero: contar(postulaciones, "ACEPTADA"), rotulo: "Postulaciones aceptadas" },
+                { numero: contar(postulaciones, "ACEPTADA"), rotulo: "Trabajos en curso" },
+                { numero: contar(postulaciones, "FINALIZADA"), rotulo: "Trabajos finalizados" },
                 { numero: contar(inscripciones, "CONFIRMADA"), rotulo: "Capacitaciones en curso" },
                 { numero: contar(inscripciones, "FINALIZADA"), rotulo: "Capacitaciones finalizadas" }
             ]));
 
-            // Avisos importantes: primero los empleadores que te aceptaron
-            postulaciones.filter(function (p) { return p.estado === "ACEPTADA"; }).slice(0, 3).forEach(function (p) {
-                const oferta = p.ofertaLaboral;
-                const empleador = oferta.empleador;
-                let detalle = empleador ? empleador.nombreEmpresa : "";
-                if (empleador && empleador.persona) {
-                    const c = empleador.persona;
-                    detalle += " · Contacto: " + c.nombre + " " + c.apellido + " · " + c.telefono + (c.email ? " · " + c.email : "");
-                }
-                panel.appendChild(aviso("ok", "¡Te aceptaron en \"" + oferta.titulo + "\"!", detalle,
-                    { texto: "Ver mis postulaciones", url: "mis-postulaciones.html" }));
-            });
+            // Las aceptaciones llegan por la campanita de notificaciones
 
             // Perfil incompleto
             if (perfil && (!perfil.matricula || !perfil.descripcionExperiencia || !perfil.disponibilidad)) {
@@ -195,16 +186,18 @@
                 return pedirLista("/api/postulaciones/oferta/" + o.id);
             }));
 
-            let sinResponder = 0, aceptadas = 0;
+            let sinResponder = 0, aceptadas = 0, finalizadas = 0;
             porOferta.forEach(function (lista) {
                 sinResponder += lista.filter(function (p) { return p.estado === "PENDIENTE"; }).length;
                 aceptadas += lista.filter(function (p) { return p.estado === "ACEPTADA"; }).length;
+                finalizadas += lista.filter(function (p) { return p.estado === "FINALIZADA"; }).length;
             });
 
             panel.appendChild(resumen([
                 { numero: ofertas.length, rotulo: "Ofertas activas" },
                 { numero: sinResponder, rotulo: "Postulantes sin responder" },
-                { numero: aceptadas, rotulo: "Postulantes aceptados" }
+                { numero: aceptadas, rotulo: "Trabajos en curso" },
+                { numero: finalizadas, rotulo: "Trabajos finalizados" }
             ]));
 
             if (sinResponder > 0) {

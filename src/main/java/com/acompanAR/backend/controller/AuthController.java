@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
+//crea la sesion para que el front arme el menu segun el rol
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {

@@ -9,3 +9,4 @@ public interface PersonaRepository extends JpaRepository<Persona,Long> {
 
     boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
 }
+//guarda las personas y se fija si el correo ya esta registrado

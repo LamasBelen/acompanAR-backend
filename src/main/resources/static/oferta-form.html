@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oferta laboral - acompanAR</title>
+    <title>Oferta laboral - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
     <header class="barra">
         <div class="barra-contenido">
-            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <a class="logo" href="index.html">acompañ<span>AR</span></a>
             <nav class="menu" id="menu"></nav>
         </div>
     </header>
@@ -26,8 +27,23 @@
                 <label for="descripcion">Descripción</label>
                 <textarea id="descripcion" required maxlength="1000" placeholder="Describí las tareas, horarios y condiciones"></textarea>
 
-                <label for="requisitos">Requisitos (opcional)</label>
-                <input type="text" id="requisitos" maxlength="255" placeholder="Ej: matrícula vigente">
+                <label>Requisitos más comunes</label>
+                <div id="requisitosComunes" class="opciones-requisitos"></div>
+
+                <label for="requisitos">Otros requisitos (opcional)</label>
+                <input type="text" id="requisitos" maxlength="255" placeholder="Ej: saber manejar silla de ruedas">
+
+                <div class="fila">
+                    <div>
+                        <label for="fechaInicio">Fecha de inicio del trabajo (opcional)</label>
+                        <input type="date" id="fechaInicio">
+                    </div>
+                    <div>
+                        <label for="duracionSemanas">Duración en semanas (opcional)</label>
+                        <input type="number" id="duracionSemanas" min="1" max="52" placeholder="Ej: 2">
+                    </div>
+                </div>
+                <p class="detalle">Si completás las dos, el profesional que aceptes y vos van a poder seguir el progreso semana por semana.</p>
 
                 <button type="submit" class="boton boton-ancho" id="botonGuardar">Publicar oferta</button>
                 <div id="mensaje" class="mensaje"></div>
@@ -46,6 +62,9 @@
         const mensaje = document.getElementById("mensaje");
         let usuario = null;
 
+        // Casillas con los requisitos del catálogo (el administrador puede sumar más)
+        const contenedorRequisitos = document.getElementById("requisitosComunes");
+
         async function iniciar() {
             usuario = await requerirSesion();
             if (usuario === null) return;
@@ -56,6 +75,12 @@
                 return;
             }
 
+            // Al publicar una oferta nueva, la fecha de inicio no puede ser anterior a hoy
+            const hoy = new Date();
+            document.getElementById("fechaInicio").min = hoy.getFullYear() + "-" +
+                String(hoy.getMonth() + 1).padStart(2, "0") + "-" + String(hoy.getDate()).padStart(2, "0");
+
+            let seleccionados = [];
             if (idOferta !== null) {
                 document.getElementById("titulo").textContent = "Editar oferta";
                 document.getElementById("botonGuardar").textContent = "Guardar cambios";
@@ -69,7 +94,12 @@
                 document.getElementById("tituloOferta").value = resultado.datos.titulo;
                 document.getElementById("descripcion").value = resultado.datos.descripcion;
                 document.getElementById("requisitos").value = resultado.datos.requisitos || "";
+                document.getElementById("fechaInicio").value = resultado.datos.fechaInicio || "";
+                document.getElementById("fechaInicio").removeAttribute("min"); // al editar puede ser una fecha pasada
+                document.getElementById("duracionSemanas").value = resultado.datos.duracionSemanas || "";
+                seleccionados = (resultado.datos.requisitosComunes || []).map(function (r) { return r.id; });
             }
+            await llenarCasillasRequisitos(contenedorRequisitos, seleccionados);
         }
 
         document.getElementById("formOferta").addEventListener("submit", async function (evento) {
@@ -78,8 +108,18 @@
             const datos = {
                 titulo: document.getElementById("tituloOferta").value.trim(),
                 descripcion: document.getElementById("descripcion").value.trim(),
-                requisitos: document.getElementById("requisitos").value.trim()
+                requisitos: document.getElementById("requisitos").value.trim(),
+                idsRequisitos: leerCasillasRequisitos(contenedorRequisitos),
+                fechaInicio: document.getElementById("fechaInicio").value || null,
+                duracionSemanas: document.getElementById("duracionSemanas").value
+                    ? parseInt(document.getElementById("duracionSemanas").value, 10) : null
             };
+
+            // La fecha de inicio y la duración van juntas
+            if ((datos.fechaInicio === null) !== (datos.duracionSemanas === null)) {
+                mostrarMensaje(mensaje, "Completá la fecha de inicio y la duración en semanas, o dejá las dos vacías.", "error");
+                return;
+            }
 
             let resultado;
             if (idOferta !== null) {

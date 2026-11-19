@@ -3,23 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrarme - acompanAR</title>
+    <title>Registrarme - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
     <header class="barra">
         <div class="barra-contenido">
-            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <a class="logo" href="index.html">acompañ<span>AR</span></a>
             <nav class="menu" id="menu"></nav>
         </div>
     </header>
 
     <main class="contenedor">
-        <div class="tarjeta tarjeta-angosta">
+        <div class="tarjeta tarjeta-angosta tarjeta-ancha">
+            <img class="marca-formulario" src="img/simbolo.png" alt="">
             <h1>Crear cuenta</h1>
             <p class="subtitulo">Elegí cómo vas a usar la plataforma.</p>
 
             <form id="formRegistro">
+              <div class="form-columnas">
+                <div class="form-col">
+                <h2>Tus datos</h2>
                 <label for="tipoCuenta">Quiero registrarme como</label>
                 <select id="tipoCuenta">
                     <option value="profesional">Profesional (busco trabajo)</option>
@@ -63,6 +68,10 @@
                     </div>
                 </div>
 
+                </div>
+
+                <div class="form-col">
+                <h2>Tu perfil</h2>
                 <!-- Campos que solo ve un profesional -->
                 <div id="camposProfesional">
                     <label for="tipoProfesional">Profesión</label>
@@ -88,6 +97,10 @@
 
                     <label for="descripcionExperiencia">Contanos tu experiencia</label>
                     <textarea id="descripcionExperiencia" maxlength="1500" placeholder="Ej: trabajé en cuidados intensivos y en domicilio..."></textarea>
+
+                    <label>Requisitos que cumplís</label>
+                    <div id="requisitosProfesional" class="opciones-requisitos"></div>
+                    <p class="detalle">Así los empleadores ven enseguida cuántos de sus requisitos cumplís.</p>
                 </div>
 
                 <!-- Campos que solo ve un empleador -->
@@ -112,7 +125,10 @@
                     recién entonces vas a poder publicar capacitaciones.</p>
                 </div>
 
-                <button type="submit" class="boton boton-ancho">Registrarme</button>
+                </div>
+              </div>
+
+                <button type="submit" class="boton boton-ancho boton-centrado">Registrarme</button>
                 <div id="mensaje" class="mensaje"></div>
             </form>
 
@@ -131,6 +147,10 @@
         const camposProfesional = document.getElementById("camposProfesional");
         const camposEmpleador = document.getElementById("camposEmpleador");
         const camposInstitucion = document.getElementById("camposInstitucion");
+
+        // Requisitos del catálogo que el profesional puede tildar
+        const contenedorRequisitos = document.getElementById("requisitosProfesional");
+        llenarCasillasRequisitos(contenedorRequisitos, []);
 
         // Tipos de institución (enum del servidor)
         pedir("/api/catalogos/tipos-institucion").then(function (r) {
@@ -170,6 +190,7 @@
                 datos.disponibilidad = document.getElementById("disponibilidad").value.trim();
                 datos.aniosExperiencia = Number(document.getElementById("aniosExperiencia").value);
                 datos.descripcionExperiencia = document.getElementById("descripcionExperiencia").value.trim();
+                datos.idsRequisitos = leerCasillasRequisitos(contenedorRequisitos);
             } else if (tipoCuenta === "institucion") {
                 url = "/api/instituciones/registro";
                 datos.nombreInstitucion = document.getElementById("nombreInstitucion").value.trim();

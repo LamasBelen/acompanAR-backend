@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capacitaciones - acompanAR</title>
+    <title>Capacitaciones - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
     <header class="barra">
         <div class="barra-contenido">
-            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <a class="logo" href="index.html">acompañ<span>AR</span></a>
             <nav class="menu" id="menu"></nav>
         </div>
     </header>
@@ -21,7 +22,32 @@
         </div>
 
         <div id="mensaje" class="mensaje"></div>
-        <div id="lista" class="lista"></div>
+        <div class="con-lateral">
+            <aside class="filtros" id="filtros" style="display: none;">
+                <h2>Filtrar capacitaciones</h2>
+                <label for="fBuscar">Buscar</label>
+                <input type="search" id="fBuscar" placeholder="Título, institución o tema" maxlength="80">
+
+                <label for="fInstitucion">Institución</label>
+                <select id="fInstitucion"></select>
+
+                <label for="fOrden">Ordenar por</label>
+                <select id="fOrden">
+                    <option value="fecha">Comienzan antes</option>
+                    <option value="menor">Menor carga horaria</option>
+                    <option value="mayor">Mayor carga horaria</option>
+                </select>
+
+                <label class="casilla"><input type="checkbox" id="fFuturas"> Solo las que todavía no empezaron</label>
+                <label class="casilla"><input type="checkbox" id="fOcultar"> Ocultar en las que ya estoy inscripto</label>
+
+                <button type="button" class="boton boton-chico boton-secundario boton-ancho" id="fLimpiar">Limpiar filtros</button>
+            </aside>
+            <section>
+                <p class="detalle" id="contador"></p>
+                <div id="lista" class="lista"></div>
+            </section>
+        </div>
     </main>
 
     <script src="js/api.js"></script>
@@ -31,6 +57,8 @@
         const lista = document.getElementById("lista");
         const mensaje = document.getElementById("mensaje");
         let usuario = null;
+        let todas = [];
+        let yaInscripto = new Set();
 
         async function cargar() {
             usuario = await requerirSesion();
@@ -50,7 +78,7 @@
             }
 
             // Ids de las capacitaciones en las que ya estoy inscripto (las canceladas no cuentan)
-            const yaInscripto = new Set();
+            yaInscripto = new Set();
             if (inscripciones.ok) {
                 inscripciones.datos.forEach(function (i) {
                     if (i.estado !== "CANCELADA") {
@@ -59,15 +87,74 @@
                 });
             }
 
+            todas = capacitaciones.datos;
+            const instituciones = Array.from(new Set(todas.map(function (c) { return c.institucion.nombre; }))).sort();
+            llenarSelect(document.getElementById("fInstitucion"),
+                instituciones.map(function (n) { return { valor: n, texto: n }; }), "Todas las instituciones");
+            if (todas.length > 0) document.getElementById("filtros").style.display = "block";
+            mostrar();
+        }
+
+        // Texto en minúsculas y sin tildes, para que "enfermería" encuentre "Enfermeria"
+        function normalizar(texto) {
+            return (texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function hoyTexto() {
+            const h = new Date();
+            return h.getFullYear() + "-" + String(h.getMonth() + 1).padStart(2, "0") + "-" + String(h.getDate()).padStart(2, "0");
+        }
+
+        // Aplica los filtros y el orden elegidos y vuelve a dibujar la lista
+        function mostrar() {
+            const buscar = normalizar(document.getElementById("fBuscar").value.trim());
+            const institucion = document.getElementById("fInstitucion").value;
+            const soloFuturas = document.getElementById("fFuturas").checked;
+            const ocultar = document.getElementById("fOcultar").checked;
+            const orden = document.getElementById("fOrden").value;
+            const hoy = hoyTexto();
+
+            let visibles = todas.filter(function (c) {
+                if (buscar && normalizar(c.titulo + " " + c.descripcion + " " + c.institucion.nombre).indexOf(buscar) === -1) return false;
+                if (institucion && c.institucion.nombre !== institucion) return false;
+                if (soloFuturas && (c.fechaInicio || "") < hoy) return false;
+                if (ocultar && yaInscripto.has(c.id)) return false;
+                return true;
+            });
+            visibles = visibles.slice().sort(function (a, b) {
+                if (orden === "menor") return a.cargaHoraria - b.cargaHoraria;
+                if (orden === "mayor") return b.cargaHoraria - a.cargaHoraria;
+                return (a.fechaInicio || "").localeCompare(b.fechaInicio || "");
+            });
+
             lista.innerHTML = "";
-            if (capacitaciones.datos.length === 0) {
+            const contador = document.getElementById("contador");
+            if (todas.length === 0) {
+                contador.textContent = "";
                 lista.appendChild(crear("p", "vacio", "Por ahora no hay capacitaciones disponibles."));
                 return;
             }
-            capacitaciones.datos.forEach(function (cap) {
+            contador.textContent = visibles.length + " de " + todas.length + " capacitación(es)";
+            if (visibles.length === 0) {
+                lista.appendChild(crear("p", "vacio", "Ninguna capacitación coincide con esos filtros. Probá con menos condiciones."));
+                return;
+            }
+            visibles.forEach(function (cap) {
                 lista.appendChild(armarTarjeta(cap, yaInscripto.has(cap.id)));
             });
         }
+
+        ["fBuscar", "fInstitucion", "fOrden", "fFuturas", "fOcultar"].forEach(function (id) {
+            document.getElementById(id).addEventListener(id === "fBuscar" ? "input" : "change", mostrar);
+        });
+        document.getElementById("fLimpiar").addEventListener("click", function () {
+            document.getElementById("fBuscar").value = "";
+            document.getElementById("fInstitucion").value = "";
+            document.getElementById("fOrden").value = "fecha";
+            document.getElementById("fFuturas").checked = false;
+            document.getElementById("fOcultar").checked = false;
+            mostrar();
+        });
 
         function armarTarjeta(cap, inscripto) {
             const tarjeta = crear("div", "tarjeta item");
@@ -91,7 +178,7 @@
             acciones.appendChild(boton);
             agregarBotonDenuncia(acciones, info, "CAPACITACION", cap.id);
 
-            tarjeta.appendChild(info);
+            tarjeta.appendChild(conAvatar(crearAvatar(cap.institucion.nombre), info));
             tarjeta.appendChild(acciones);
             return tarjeta;
         }

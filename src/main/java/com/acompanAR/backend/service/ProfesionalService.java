@@ -41,6 +41,7 @@ public class ProfesionalService {
     private final PostulacionRepository postulacionRepository;
     private final InscripcionRepository inscripcionRepository;
     private final TipoProfesionalRepository tipoProfesionalRepository;
+    private final RequisitoService requisitoService;
 
     public ProfesionalService(PasswordEncoder passwordEncoder,
                               PersonaRepository personaRepository,
@@ -48,7 +49,9 @@ public class ProfesionalService {
                               ProfesionalRepository profesionalRepository,
                               PostulacionRepository postulacionRepository,
                               InscripcionRepository inscripcionRepository,
-                              TipoProfesionalRepository tipoProfesionalRepository) {
+                              TipoProfesionalRepository tipoProfesionalRepository,
+                              RequisitoService requisitoService) {
+        this.requisitoService = requisitoService;
         this.passwordEncoder = passwordEncoder;
         this.personaRepository = personaRepository;
         this.usuarioRepository = usuarioRepository;
@@ -123,6 +126,7 @@ public class ProfesionalService {
         profesional.setDescripcionExperiencia(dto.getDescripcionExperiencia());
         profesional.setDisponibilidad(dto.getDisponibilidad());
         profesional.setMatricula(matricula);
+        profesional.setRequisitosCumplidos(requisitoService.buscarActivos(dto.getIdsRequisitos()));
         profesional.setEstado(Estado.ACTIVO);
         profesional.setPersona(persona);
         profesional.setUsuario(usuario);
@@ -172,6 +176,7 @@ public class ProfesionalService {
         profesional.setDescripcionExperiencia(dto.getDescripcionExperiencia());
         profesional.setDisponibilidad(dto.getDisponibilidad());
         profesional.setMatricula(matricula);
+        profesional.setRequisitosCumplidos(requisitoService.buscarActivos(dto.getIdsRequisitos()));
 
         return profesionalRepository.save(profesional);
     }

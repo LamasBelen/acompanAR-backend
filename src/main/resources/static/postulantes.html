@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Postulantes - acompanAR</title>
+    <title>Postulantes - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
     <header class="barra">
         <div class="barra-contenido">
-            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <a class="logo" href="index.html">acompañ<span>AR</span></a>
             <nav class="menu" id="menu"></nav>
         </div>
     </header>
@@ -34,6 +35,7 @@
         const lista = document.getElementById("lista");
         const mensaje = document.getElementById("mensaje");
         let calificadas = new Set(); // postulaciones que ya calificó este empleador
+        let sinLeer = new Map();     // mensajes sin leer por postulación
 
         async function cargar() {
             await cargarLocalidades(); // para mostrar "Río Grande" en vez de "RIO_GRANDE"
@@ -46,6 +48,7 @@
             }
 
             calificadas = await cargarCalificacionesHechas();
+            sinLeer = await cargarMensajesPendientes();
             const resultado = await pedir("/api/postulaciones/oferta/" + idOferta);
             if (!resultado.ok) {
                 mostrarMensaje(mensaje, "No se pudieron cargar los postulantes de esta oferta.", "error");
@@ -61,7 +64,11 @@
             document.getElementById("subtitulo").textContent =
                 "Oferta: " + resultado.datos[0].ofertaLaboral.titulo;
 
-            resultado.datos.forEach(function (postulacion) {
+            // Primero los que cumplen más requisitos de la oferta (a igualdad, se mantiene el orden)
+            const cumplidos = function (p) {
+                return calcularCoincidencia(p.ofertaLaboral.requisitosComunes, p.profesional.requisitosCumplidos).cumplidos.length;
+            };
+            resultado.datos.slice().sort(function (a, b) { return cumplidos(b) - cumplidos(a); }).forEach(function (postulacion) {
                 lista.appendChild(armarTarjeta(postulacion));
             });
         }
@@ -73,9 +80,11 @@
 
             const info = crear("div");
             info.appendChild(crear("h2", "", persona.nombre + " " + persona.apellido));
-            info.appendChild(crear("p", "detalle",
-                profesional.tipoProfesional.nombre + " · " + nombreLocalidad(persona.localidad) +
-                " · Se postuló el " + formatearFecha(postulacion.fechaPostulacion)));
+            const datos = crear("div", "etiquetas");
+            datos.appendChild(crear("span", "etiqueta", profesional.tipoProfesional.nombre));
+            datos.appendChild(crear("span", "etiqueta neutra", "📍 " + nombreLocalidad(persona.localidad)));
+            datos.appendChild(crear("span", "etiqueta neutra", "Se postuló el " + formatearFecha(postulacion.fechaPostulacion)));
+            info.appendChild(datos);
             if (profesional.matricula) {
                 info.appendChild(crear("p", "detalle", "Matrícula: " + profesional.matricula));
             }
@@ -86,10 +95,14 @@
             if (profesional.descripcionExperiencia) {
                 info.appendChild(crear("p", "", profesional.descripcionExperiencia));
             }
-            // Cuando el empleador acepta, se habilita el contacto
-            if (postulacion.estado === "ACEPTADA") {
+            // Cuando el empleador acepta, se habilita el contacto (y se mantiene al finalizar)
+            const enTrabajo = postulacion.estado === "ACEPTADA" || postulacion.estado === "FINALIZADA";
+            if (enTrabajo) {
                 info.appendChild(crear("p", "detalle", "Contacto: " + persona.telefono + (persona.email ? " · " + persona.email : "")));
             }
+
+            // Cuántos de los requisitos de la oferta cumple este profesional
+            agregarCoincidencia(info, postulacion.ofertaLaboral.requisitosComunes, profesional.requisitosCumplidos, true);
 
             // Reputación del profesional (se completa cuando llega la respuesta del servidor)
             if (profesional.usuario) {
@@ -98,23 +111,54 @@
                 obtenerReputacion(profesional.usuario.id).then(function (r) {
                     reputacion.textContent = "Reputación: " + textoReputacion(r);
                 });
+                agregarOpiniones(info, profesional.usuario.id);
+            }
+
+            // Trabajo aceptado o terminado: se muestra el avance semana por semana
+            if (enTrabajo) {
+                const progreso = crear("div");
+                info.appendChild(progreso);
+                mostrarProgreso(progreso, postulacion.id);
             }
 
             const acciones = crear("div", "acciones");
-            acciones.appendChild(crear("span", "estado estado-" + postulacion.estado, postulacion.estado));
+            acciones.appendChild(crearEtiquetaEstado(postulacion.estado));
 
             // Solo se puede responder una postulación pendiente
             if (postulacion.estado === "PENDIENTE") {
+                // Antes de responder se pide confirmación, así no se acepta ni se rechaza por un clic equivocado
                 const aceptar = crear("button", "boton boton-chico", "Aceptar");
-                aceptar.addEventListener("click", function () { responder(postulacion.id, "aceptar"); });
+                aceptar.addEventListener("click", async function () {
+                    const confirmado = await confirmarAccion(
+                        "Vas a aceptar a " + persona.nombre + " " + persona.apellido + " para esta oferta. " +
+                        "Se le va a mostrar tu contacto y la decisión no se puede deshacer.",
+                        { titulo: "¿Aceptar a este profesional?", textoBoton: "Sí, aceptar", peligro: false });
+                    if (confirmado) responder(postulacion.id, "aceptar");
+                });
                 const rechazar = crear("button", "boton boton-chico boton-peligro", "Rechazar");
-                rechazar.addEventListener("click", function () { responder(postulacion.id, "rechazar"); });
+                rechazar.addEventListener("click", async function () {
+                    const confirmado = await confirmarAccion(
+                        "Vas a rechazar a " + persona.nombre + " " + persona.apellido + ". La decisión no se puede deshacer.",
+                        { titulo: "¿Rechazar a este profesional?", textoBoton: "Sí, rechazar" });
+                    if (confirmado) responder(postulacion.id, "rechazar");
+                });
                 acciones.appendChild(aceptar);
                 acciones.appendChild(rechazar);
             }
 
-            // Postulación aceptada: se puede calificar al profesional (una sola vez)
+            // Trabajo en curso: se conversa y se puede dar por terminado
             if (postulacion.estado === "ACEPTADA") {
+                agregarBotonFinalizar(acciones, postulacion.id, postulacion.ofertaLaboral.titulo, cargar, mensaje);
+            }
+            if (enTrabajo) {
+                agregarChat(acciones, info, postulacion.id, postulacion.estado, sinLeer.get(postulacion.id) || 0);
+            }
+
+            // Recién con el trabajo finalizado se puede calificar al profesional (una sola vez)
+            if (postulacion.estado === "ACEPTADA") {
+                info.appendChild(crear("p", "detalle", "Vas a poder calificar al profesional cuando finalice el trabajo."));
+            }
+            if (postulacion.estado === "FINALIZADA") {
                 if (calificadas.has(postulacion.id)) {
                     acciones.appendChild(crear("span", "ya-calificado", "Ya calificaste ✓"));
                 } else {
@@ -127,9 +171,11 @@
                 }
             }
 
+            acciones.appendChild(crear("a", "boton-enlace", "Ver perfil completo",
+                { href: "perfil-publico.html?tipo=profesional&id=" + profesional.id }));
             agregarBotonDenuncia(acciones, info, "PROFESIONAL", profesional.id);
 
-            tarjeta.appendChild(info);
+            tarjeta.appendChild(conAvatar(crearAvatar(persona.nombre, persona.apellido), info));
             tarjeta.appendChild(acciones);
             return tarjeta;
         }

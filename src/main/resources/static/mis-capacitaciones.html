@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis capacitaciones - acompanAR</title>
+    <title>Mis capacitaciones - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
     <header class="barra">
         <div class="barra-contenido">
-            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <a class="logo" href="index.html">acompañ<span>AR</span></a>
             <nav class="menu" id="menu"></nav>
         </div>
     </header>
@@ -74,7 +75,7 @@
             }
 
             const acciones = crear("div", "acciones");
-            acciones.appendChild(crear("span", "estado estado-" + inscripcion.estado, inscripcion.estado));
+            acciones.appendChild(crearEtiquetaEstado(inscripcion.estado));
 
             // Solo una inscripción confirmada se puede finalizar o cancelar
             if (inscripcion.estado === "CONFIRMADA") {
@@ -93,7 +94,7 @@
 
         // accion es "finalizar" o "cancelar" y coincide con el final de la URL del backend
         async function cambiar(idInscripcion, accion, pregunta) {
-            if (!confirm(pregunta)) return;
+            if (!await confirmarAccion(pregunta)) return;
 
             const resultado = await pedir("/api/inscripciones/" + accion + "/" + idInscripcion, "PUT");
             if (resultado.ok) {

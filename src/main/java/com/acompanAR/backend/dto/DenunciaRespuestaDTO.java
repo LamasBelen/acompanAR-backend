@@ -108,3 +108,4 @@ public class DenunciaRespuestaDTO {
     }
 
 }
+//contiene solo datos sirve para pasar la info limpia y sacar datos innecesarios que el usuario no tiene que ver

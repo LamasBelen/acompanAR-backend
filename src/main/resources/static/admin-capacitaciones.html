@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administrar capacitaciones - acompanAR</title>
+    <title>Administrar capacitaciones - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
     <header class="barra">
         <div class="barra-contenido">
-            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <a class="logo" href="index.html">acompañ<span>AR</span></a>
             <nav class="menu" id="menu"></nav>
         </div>
     </header>
@@ -124,7 +125,7 @@
         }
 
         async function darDeBaja(idCapacitacion) {
-            if (!confirm("¿Querés dar de baja esta capacitación? Ya no la van a ver los profesionales.")) return;
+            if (!await confirmarAccion("Ya no la van a ver los profesionales.", { titulo: "¿Dar de baja esta capacitación?", textoBoton: "Sí, dar de baja" })) return;
 
             const resultado = await pedir("/api/capacitaciones/baja/" + idCapacitacion, "PUT");
             if (resultado.ok) {

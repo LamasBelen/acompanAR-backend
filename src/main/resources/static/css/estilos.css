@@ -1,17 +1,23 @@
 /* ==========================================
-   Estilos generales de acompanAR
+   Estilos generales de acompañAR
    ========================================== */
 :root {
-    --verde: #1f7a6d;
-    --verde-oscuro: #165a50;
-    --verde-claro: #e6f3f1;
-    --texto: #1f2933;
-    --gris: #6b7785;
-    --borde: #d5dde3;
-    --fondo: #f5f8f9;
+    /* Paleta tomada del logo: verde lima y naranja. Los verdes de texto y botones son más oscuros
+       que el del logo para que se lean bien (contraste) sobre fondo blanco. */
+    --verde: #4f7f12;
+    --verde-oscuro: #3b6109;
+    --verde-claro: #eef6d9;
+    --lima: #8db520;
+    --naranja: #f28c0f;
+    --naranja-oscuro: #a85a00;
+    --naranja-claro: #fff1dc;
+    --texto: #26301f;
+    --gris: #667062;
+    --borde: #dfe5d3;
+    --fondo: #fbfaf4;
     --error: #b3261e;
     --error-fondo: #fdecea;
-    --ok-fondo: #e7f5ec;
+    --ok-fondo: #eef6d9;
 }
 
 * {
@@ -439,4 +445,1334 @@ textarea {
 .nota-moderacion {
     width: 100%;
     margin: 8px 0;
+}
+
+/* ---- Ventana de confirmación (modal) ---- */
+.modal-fondo {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 30, 38, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1000;
+    animation: aparecer 0.15s ease-out;
+}
+
+.modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    animation: subir 0.18s ease-out;
+}
+
+.modal h2 {
+    margin-top: 0;
+}
+
+.modal p {
+    color: var(--gris);
+    margin: 0 0 20px;
+}
+
+.modal-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+@keyframes aparecer {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes subir {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* ---- Requisitos comunes ---- */
+.opciones-requisitos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.opcion-requisito {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 8px 10px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.opcion-requisito input {
+    width: auto;
+    margin: 0;
+}
+
+.opcion-requisito:has(input:checked) {
+    background: var(--verde-claro);
+    border-color: var(--verde);
+}
+
+.etiquetas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0;
+}
+
+.etiqueta {
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--verde-claro);
+    color: var(--verde-oscuro);
+}
+
+/* ---- Progreso del trabajo ---- */
+.progreso {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed #cfd8dc;
+}
+
+.progreso-titulo {
+    font-weight: 600;
+    color: var(--verde-oscuro);
+    margin: 0 0 4px;
+}
+
+.barra-progreso {
+    height: 10px;
+    background: #e3e9ec;
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.barra-relleno {
+    height: 100%;
+    background: var(--verde);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+
+.semanas {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+}
+
+.semana {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--borde);
+    font-size: 0.85rem;
+}
+
+.semana small {
+    color: var(--gris);
+}
+
+.semana-COMPLETADA {
+    background: var(--ok-fondo);
+    border-color: #b7dfc6;
+    color: var(--verde-oscuro);
+}
+
+.semana-EN_CURSO {
+    background: #fff3d6;
+    border-color: #f0d28a;
+    color: #8a5a00;
+}
+
+.semana-PENDIENTE {
+    background: #f4f6f7;
+    color: var(--gris);
+}
+
+/* ---- Opiniones desplegables ---- */
+.opiniones {
+    margin-top: 10px;
+    padding: 4px 12px 8px;
+    background: #f7fafa;
+    border-radius: 8px;
+}
+
+/* ==========================================
+   Tema visual (logo verde y naranja)
+   ========================================== */
+/* Fondo cálido con un toque de verde y naranja arriba; el pie queda siempre abajo */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background:
+        radial-gradient(ellipse 600px 380px at 8% 0, rgba(141, 181, 32, 0.14), transparent 70%),
+        radial-gradient(ellipse 600px 380px at 95% 0, rgba(242, 140, 15, 0.13), transparent 70%),
+        var(--fondo);
+    background-repeat: no-repeat;
+}
+
+.contenedor {
+    width: 100%;
+    flex: 1;
+}
+
+.barra-contenido,
+.contenedor {
+    max-width: 1120px;
+}
+
+.menu {
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.menu a {
+    white-space: nowrap;
+}
+
+/* ---- Barra superior con el símbolo del logo y una línea de color ---- */
+.barra {
+    position: relative;
+    box-shadow: 0 2px 12px rgba(59, 97, 9, 0.07);
+    border-bottom: none;
+}
+
+.barra::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--lima), var(--naranja));
+}
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.5rem;
+    letter-spacing: -0.3px;
+    color: var(--verde);
+}
+
+.logo::before {
+    content: "";
+    width: 38px;
+    height: 38px;
+    margin-right: 8px;
+    background: url("../img/simbolo.png") center / contain no-repeat;
+}
+
+.logo span {
+    color: var(--naranja-oscuro);
+}
+
+.menu a:not(.boton) {
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: var(--texto);
+    transition: background 0.15s, color 0.15s;
+}
+
+.menu a:not(.boton):hover {
+    background: var(--verde-claro);
+    color: var(--verde-oscuro);
+}
+
+.menu a.activo:not(.boton) {
+    background: var(--verde-claro);
+    color: var(--verde-oscuro);
+    font-weight: 700;
+}
+
+/* ---- Tarjetas ---- */
+.tarjeta {
+    border-radius: 16px;
+    border-color: var(--borde);
+    box-shadow: 0 2px 10px rgba(59, 97, 9, 0.05);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.lista .tarjeta:hover {
+    box-shadow: 0 8px 22px rgba(59, 97, 9, 0.12);
+    transform: translateY(-2px);
+}
+
+/* Las tarjetas de formulario llevan una franja de color arriba */
+.tarjeta-angosta {
+    border-top: 4px solid var(--lima);
+    box-shadow: 0 10px 30px rgba(59, 97, 9, 0.1);
+}
+
+h1, h2 {
+    color: #1f2a17;
+}
+
+/* ---- Botones ---- */
+.boton {
+    border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(59, 97, 9, 0.2);
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+.boton:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(59, 97, 9, 0.25);
+}
+
+.boton:active {
+    transform: translateY(0);
+}
+
+.boton-secundario {
+    box-shadow: none;
+    background: white;
+}
+
+.boton-secundario:hover {
+    color: white;
+    box-shadow: 0 4px 10px rgba(59, 97, 9, 0.2);
+}
+
+.boton-peligro {
+    box-shadow: none;
+}
+
+/* Botón naranja para la acción principal de la portada */
+.boton-naranja {
+    color: #2b1a00;
+    background: var(--naranja);
+    border-color: var(--naranja);
+    box-shadow: 0 2px 8px rgba(242, 140, 15, 0.35);
+}
+
+.boton-naranja:hover {
+    color: #2b1a00;
+    background: #ffa02e;
+    border-color: #ffa02e;
+    box-shadow: 0 6px 16px rgba(242, 140, 15, 0.4);
+}
+
+:focus-visible {
+    outline: 3px solid var(--naranja);
+    outline-offset: 2px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 3px solid rgba(141, 181, 32, 0.35);
+    border-color: var(--verde);
+}
+
+/* ---- Estados y etiquetas con la paleta ---- */
+.estado-PENDIENTE,
+.estado-CONFIRMADA {
+    color: var(--naranja-oscuro);
+    background: var(--naranja-claro);
+}
+
+/* ---- Portada ---- */
+.portada {
+    position: relative;
+    padding: 28px 20px 24px;
+}
+
+.portada-logo {
+    display: block;
+    width: min(300px, 70%);
+    height: auto;
+    margin: 0 auto 8px;
+    animation: subir 0.6s ease-out;
+}
+
+.portada h1 {
+    font-size: 2.1rem;
+    line-height: 1.2;
+}
+
+.portada h1 em {
+    font-style: normal;
+    color: var(--naranja-oscuro);
+}
+
+.beneficios .tarjeta {
+    border-top: 4px solid var(--lima);
+}
+
+.beneficios .tarjeta:nth-child(even) {
+    border-top-color: var(--naranja);
+}
+
+.beneficios .tarjeta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(59, 97, 9, 0.12);
+}
+
+/* ---- Pie de página ---- */
+.pie {
+    margin-top: auto;
+    padding: 22px 20px;
+    text-align: center;
+    color: var(--gris);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--borde);
+    background: white;
+}
+
+.pie img {
+    width: 26px;
+    height: 26px;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+.pie strong {
+    color: var(--verde-oscuro);
+}
+
+/* ---- Pantalla de ingreso / registro con el logo arriba ---- */
+.marca-formulario {
+    display: block;
+    width: 120px;
+    height: auto;
+    margin: 0 auto 10px;
+}
+
+/* ---- Lista de semanas y progreso con la paleta ---- */
+.barra-relleno {
+    background: linear-gradient(90deg, var(--lima), var(--verde));
+}
+
+.semana-COMPLETADA {
+    border-color: #cfe39b;
+}
+
+.semana-EN_CURSO {
+    background: var(--naranja-claro);
+    border-color: #f6c67f;
+    color: var(--naranja-oscuro);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* ---- Coincidencia de requisitos ---- */
+.coincidencia {
+    margin: 10px 0 0;
+    font-weight: 600;
+    color: var(--naranja-oscuro);
+}
+
+.coincidencia-total {
+    color: var(--verde-oscuro);
+}
+
+.etiqueta.cumple {
+    background: var(--verde-claro);
+    color: var(--verde-oscuro);
+    border: 1px solid #cfe39b;
+}
+
+.etiqueta.falta {
+    background: var(--naranja-claro);
+    color: var(--naranja-oscuro);
+    border: 1px solid #f6c67f;
+}
+
+/* ---- Campanita de notificaciones ---- */
+.campana-contenedor {
+    position: relative;
+}
+
+.campana {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    color: var(--verde-oscuro);
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.campana:hover {
+    background: var(--verde-claro);
+}
+
+.campana-numero {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    background: #d93025;
+    border: 2px solid #fff;
+    box-sizing: content-box;
+    border-radius: 999px;
+}
+
+.panel-notificaciones {
+    position: absolute;
+    right: 0;
+    top: 46px;
+    width: 360px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.18);
+    z-index: 900;
+}
+
+.panel-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.enlace-boton {
+    padding: 0;
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--verde);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.panel-vacio {
+    margin: 0;
+    padding: 24px 14px;
+    text-align: center;
+    color: var(--gris);
+}
+
+.panel-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.aviso {
+    display: block;
+    width: 100%;
+    padding: 10px 14px 10px 24px;
+    position: relative;
+    text-align: left;
+    font: inherit;
+    color: var(--texto);
+    background: #fff;
+    border: none;
+    border-bottom: 1px solid #eef1e6;
+    cursor: pointer;
+}
+
+.aviso:hover {
+    background: #f7faef;
+}
+
+.aviso-texto {
+    display: block;
+    font-size: 0.92rem;
+}
+
+.aviso small {
+    color: var(--gris);
+}
+
+.aviso-nuevo {
+    background: #fbfdf3;
+    font-weight: 600;
+}
+
+.aviso-nuevo::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 17px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--naranja);
+}
+
+@media (max-width: 600px) {
+    .panel-notificaciones {
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        top: 70px;
+        width: auto;
+    }
+}
+
+
+/* ==========================================
+   Jerarquía de acciones, avatares y estados
+   ========================================== */
+
+/* Acción principal: botón verde. Secundaria: borde. Terciaria (ver perfil, denunciar): enlace discreto. */
+.boton-enlace {
+    padding: 2px 0;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--verde);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.boton-enlace:hover {
+    color: var(--verde-oscuro);
+    text-decoration: underline;
+}
+
+.boton-enlace:disabled {
+    color: var(--gris);
+    cursor: default;
+    text-decoration: none;
+}
+
+.item .acciones {
+    min-width: 170px;
+    align-items: stretch;
+    text-align: center;
+}
+
+.item .acciones .estado {
+    align-self: flex-end;
+}
+
+.item .acciones .boton-chico {
+    text-align: center;
+}
+
+.item .acciones .boton-enlace {
+    align-self: center;
+}
+
+/* Avatar con iniciales */
+.con-avatar {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    flex: 1 1 340px;
+    min-width: 0;
+}
+
+.con-avatar-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.avatar {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    color: white;
+    background: linear-gradient(135deg, var(--lima), var(--verde));
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(59, 97, 9, 0.25);
+}
+
+.avatar-naranja {
+    background: linear-gradient(135deg, #ffb347, var(--naranja));
+    color: #2b1a00;
+    box-shadow: 0 2px 6px rgba(242, 140, 15, 0.3);
+}
+
+/* Etiquetas de estado con puntito */
+.estado::before {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 6px;
+    vertical-align: 1px;
+    background: currentColor;
+    border-radius: 50%;
+}
+
+.estado-CONFIRMADA { color: var(--naranja-oscuro); background: var(--naranja-claro); }
+
+/* Etiqueta neutra (localidad, fecha) */
+.etiqueta.neutra {
+    color: var(--gris);
+    background: #f1f2ec;
+}
+
+.avatar-grande {
+    display: flex;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 12px;
+    font-size: 1.5rem;
+}
+
+.boton-opiniones {
+    margin-top: 4px;
+}
+
+
+/* ==========================================
+   Pantallas en columnas (menos scroll)
+   ========================================== */
+.dos-columnas {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.dos-columnas .tarjeta-angosta {
+    max-width: none;
+    margin: 0;
+}
+
+.dos-columnas .columna {
+    display: grid;
+    gap: 24px;
+}
+
+/* Listado con panel de filtros a la izquierda */
+.con-lateral {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.filtros {
+    position: sticky;
+    top: 16px;
+    padding: 20px;
+    background: white;
+    border: 1px solid var(--borde);
+    border-top: 4px solid var(--lima);
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(59, 97, 9, 0.05);
+}
+
+.filtros h2 {
+    margin: 0 0 4px;
+    font-size: 1.1rem;
+}
+
+.filtros .casilla {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.filtros .casilla input {
+    width: auto;
+    margin: 0;
+}
+
+.filtros .boton {
+    margin-top: 18px;
+}
+
+@media (max-width: 860px) {
+    .dos-columnas,
+    .con-lateral {
+        grid-template-columns: 1fr;
+    }
+
+    .filtros {
+        position: static;
+    }
+}
+
+
+/* ---- Registro en dos columnas ---- */
+.tarjeta-ancha {
+    max-width: 960px;
+}
+
+.form-columnas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 40px;
+    align-items: start;
+}
+
+.form-col h2 {
+    margin: 8px 0 0;
+    padding-bottom: 8px;
+    font-size: 1.05rem;
+    color: var(--verde-oscuro);
+    border-bottom: 2px solid var(--verde-claro);
+}
+
+.boton-centrado {
+    display: block;
+    max-width: 360px;
+    margin: 24px auto 0;
+}
+
+@media (max-width: 860px) {
+    .form-columnas {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---- Menú hamburguesa ---- */
+.boton-menu {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: var(--verde-oscuro);
+    background: white;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+@media (max-width: 860px) {
+    .barra-contenido {
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .boton-menu {
+        display: inline-flex;
+    }
+
+    .menu {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+        padding: 8px 0 12px;
+    }
+
+    .menu.abierto {
+        display: flex;
+    }
+
+    .menu a:not(.boton),
+    .menu .boton {
+        padding: 12px 14px;
+        text-align: left;
+    }
+
+    .menu .boton {
+        text-align: center;
+    }
+}
+
+.tarjeta-ancha .marca-formulario {
+    width: 76px;
+}
+
+.tarjeta-ancha > h1,
+.tarjeta-ancha > .subtitulo {
+    text-align: center;
+}
+
+@media (max-width: 860px) {
+    /* La campanita, dentro del menú desplegable, lleva su nombre al lado */
+    .menu .campana {
+        width: 100%;
+        height: auto;
+        padding: 10px 14px;
+        justify-content: flex-start;
+        gap: 10px;
+        border-radius: 8px;
+    }
+
+    .menu .campana::after {
+        content: "Notificaciones";
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--texto);
+    }
+
+    .menu .campana-numero {
+        position: static;
+        order: 2;
+    }
+}
+
+
+/* Barra de filtros horizontal (listas con pocos filtros) */
+.barra-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px 16px;
+    margin-bottom: 14px;
+    padding: 14px 18px 16px;
+    background: white;
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(59, 97, 9, 0.05);
+}
+
+.barra-filtros > div {
+    flex: 1 1 200px;
+}
+
+.barra-filtros .boton {
+    margin-bottom: 2px;
+}
+
+
+/* ---- Lista desplegable (requisitos) ---- */
+.desplegable-caja {
+    position: relative;
+}
+
+.desplegable {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.desplegable-boton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 14px;
+    font: inherit;
+    color: var(--texto);
+    text-align: left;
+    background: white;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.desplegable-boton:hover,
+.desplegable-boton[aria-expanded="true"] {
+    border-color: var(--verde);
+}
+
+.desplegable-flecha {
+    color: var(--verde);
+    transition: transform 0.15s;
+}
+
+.desplegable-boton[aria-expanded="true"] .desplegable-flecha {
+    transform: rotate(180deg);
+}
+
+.desplegable-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 4px);
+    z-index: 50;
+    max-height: 260px;
+    overflow-y: auto;
+    grid-template-columns: 1fr;
+    margin: 0;
+    padding: 8px;
+    background: white;
+    border: 1px solid var(--verde);
+    border-radius: 10px;
+    box-shadow: 0 12px 30px rgba(59, 97, 9, 0.18);
+}
+
+.desplegable-panel[hidden] {
+    display: none;
+}
+
+.desplegable-elegidos:empty {
+    display: none;
+}
+
+.desplegable-elegidos {
+    margin: 8px 0 0;
+}
+
+
+/* ---- Mensajería (chat de una postulación) ---- */
+.boton-mensajes {
+    position: relative;
+}
+
+.globito {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    margin-left: 8px;
+    padding: 0 5px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+    background: #d93025;
+    border-radius: 999px;
+}
+
+.chat {
+    margin-top: 14px;
+    padding: 12px;
+    background: #f7f8f1;
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+}
+
+.chat[hidden] {
+    display: none;
+}
+
+.chat-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 4px 2px 8px;
+}
+
+.chat-burbuja {
+    align-self: flex-start;
+    max-width: 82%;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid var(--borde);
+    border-radius: 14px 14px 14px 4px;
+}
+
+.chat-burbuja.mio {
+    align-self: flex-end;
+    color: #1b2d05;
+    background: var(--verde-claro);
+    border-color: #cfe3a0;
+    border-radius: 14px 14px 4px 14px;
+}
+
+.chat-texto {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.chat-meta {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    color: var(--gris);
+}
+
+.chat-formulario {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.chat-formulario textarea {
+    flex: 1;
+    min-height: 44px;
+    margin: 0;
+    resize: vertical;
+}
+
+.chat-error {
+    min-height: 0;
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--error);
+}
+
+.chat-error:empty {
+    display: none;
+}
+
+
+/* ---- Bandeja de mensajes (lista de conversaciones + chat) ---- */
+.bandeja {
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    height: calc(100vh - 290px);
+    min-height: 460px;
+    overflow: hidden;
+    background: white;
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(59, 97, 9, 0.05);
+}
+
+.bandeja-lista {
+    overflow-y: auto;
+    border-right: 1px solid var(--borde);
+}
+
+.conversacion {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    font: inherit;
+    color: var(--texto);
+    text-align: left;
+    background: white;
+    border: none;
+    border-bottom: 1px solid #eef0e6;
+    cursor: pointer;
+}
+
+.conversacion:hover {
+    background: #f7f9ee;
+}
+
+.conversacion.activa {
+    background: var(--verde-claro);
+    box-shadow: inset 4px 0 0 var(--verde);
+}
+
+.conversacion .avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 0.95rem;
+}
+
+.conversacion-texto {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.conversacion-arriba {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.conversacion-arriba strong,
+.conversacion-oferta,
+.conversacion-previa {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.conversacion-hora {
+    flex: none;
+    font-size: 0.75rem;
+    color: var(--gris);
+}
+
+.conversacion-oferta {
+    font-size: 0.8rem;
+    color: var(--verde-oscuro);
+}
+
+.conversacion-previa {
+    font-size: 0.88rem;
+    color: var(--gris);
+}
+
+.conversacion.sin-leer .conversacion-previa {
+    font-weight: 700;
+    color: var(--texto);
+}
+
+.bandeja-sin-nada {
+    padding: 24px 18px;
+    text-align: center;
+}
+
+.bandeja-chat {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.bandeja-vacia {
+    margin: auto;
+    padding: 20px;
+}
+
+.bandeja-cabecera {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.bandeja-cabecera .avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 0.95rem;
+}
+
+.bandeja-titulo {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.bandeja-titulo .detalle {
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bandeja-volver {
+    display: none;
+    padding: 4px 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--verde);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* El chat ocupa todo el alto disponible de la columna derecha */
+.bandeja-chat .chat {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: #f7f8f1;
+}
+
+.bandeja-chat .chat-lista {
+    flex: 1;
+    max-height: none;
+    min-height: 0;
+    padding: 12px 6px;
+}
+
+@media (max-width: 860px) {
+    .bandeja {
+        grid-template-columns: 1fr;
+        height: calc(100vh - 240px);
+    }
+
+    .bandeja-chat {
+        display: none;
+    }
+
+    .bandeja.con-chat-abierto .bandeja-lista {
+        display: none;
+    }
+
+    .bandeja.con-chat-abierto .bandeja-chat {
+        display: flex;
+    }
+
+    .bandeja-volver {
+        display: block;
+    }
+}
+
+
+/* ---- Resumen dentro de la ventana de confirmación al postularse ---- */
+.modal:has(.resumen-postulacion) {
+    max-width: 560px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+}
+
+.modal:has(.resumen-postulacion) > p {
+    margin-bottom: 14px;
+}
+
+.resumen-postulacion {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.resumen-bloque {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    background: #f7f8f1;
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+}
+
+.resumen-bloque .detalle {
+    margin: 0;
+}
+
+.resumen-bloque .etiquetas {
+    margin: 6px 0 0;
+}
+
+.resumen-pasos {
+    margin: 6px 0 0;
+    padding-left: 20px;
+    color: var(--gris);
+}
+
+.resumen-pasos li {
+    margin-bottom: 4px;
 }

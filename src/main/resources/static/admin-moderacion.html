@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moderación - acompanAR</title>
+    <title>Moderación - acompañAR</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
     <header class="barra">
         <div class="barra-contenido">
-            <a class="logo" href="index.html">acompan<span>AR</span></a>
+            <a class="logo" href="index.html">acompañ<span>AR</span></a>
             <nav class="menu" id="menu"></nav>
         </div>
     </header>
@@ -101,8 +102,8 @@
                     accion("/api/instituciones/verificar/" + inst.id, null, "No se pudo verificar la institución.");
                 });
                 const rechazar = crear("button", "boton boton-chico boton-peligro", "Rechazar");
-                rechazar.addEventListener("click", function () {
-                    if (confirm("¿Rechazar la solicitud de " + inst.nombre + "?")) {
+                rechazar.addEventListener("click", async function () {
+                    if (await confirmarAccion("La institución " + inst.nombre + " no va a poder publicar capacitaciones.", { titulo: "¿Rechazar esta solicitud?", textoBoton: "Sí, rechazar" })) {
                         accion("/api/instituciones/rechazar/" + inst.id, null, "No se pudo rechazar la solicitud.");
                     }
                 });
@@ -140,8 +141,8 @@
 
                 const acciones = crear("div", "acciones");
                 const baja = crear("button", "boton boton-chico boton-peligro", "Dar de baja");
-                baja.addEventListener("click", function () {
-                    if (confirm("¿Dar de baja " + d.descripcionObjeto + "?")) {
+                baja.addEventListener("click", async function () {
+                    if (await confirmarAccion(d.descripcionObjeto, { titulo: "¿Dar de baja lo denunciado?", textoBoton: "Sí, dar de baja" })) {
                         accion("/api/denuncias/resolver/" + d.id, { accion: "DAR_DE_BAJA", nota: nota.value.trim() },
                             "No se pudo resolver la denuncia.");
                     }
@@ -188,8 +189,8 @@
                 info.appendChild(crear("h2", "", f.nombre));
                 info.appendChild(crear("p", "detalle", f.tipo));
                 const baja = crear("button", "boton boton-chico boton-peligro", "Dar de baja");
-                baja.addEventListener("click", function () {
-                    if (confirm("¿Dar de baja a " + f.nombre + "? No va a poder volver a ingresar.")) {
+                baja.addEventListener("click", async function () {
+                    if (await confirmarAccion(f.nombre + " no va a poder volver a ingresar.", { titulo: "¿Dar de baja a este usuario?", textoBoton: "Sí, dar de baja" })) {
                         accion(f.url, null, "No se pudo dar de baja el perfil.");
                     }
                 });

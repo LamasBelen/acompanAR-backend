@@ -13,3 +13,4 @@ public interface TipoProfesionalRepository extends JpaRepository<TipoProfesional
 
     boolean existsByNombreIgnoreCase(String nombre);
 }
+//se fija que esten activos y que no hayan dos con el mismo nombre

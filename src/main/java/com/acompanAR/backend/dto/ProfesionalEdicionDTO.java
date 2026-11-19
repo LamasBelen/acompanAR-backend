@@ -4,6 +4,7 @@ import com.acompanAR.backend.entity.Localidad;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -118,5 +119,16 @@ public class ProfesionalEdicionDTO {
 
     public void setMatricula(String matricula) {
         this.matricula = matricula;
+    }
+
+    // Requisitos del catálogo que cumple el profesional (ids). Opcional.
+    private List<Long> idsRequisitos;
+
+    public List<Long> getIdsRequisitos() {
+        return idsRequisitos;
+    }
+
+    public void setIdsRequisitos(List<Long> idsRequisitos) {
+        this.idsRequisitos = idsRequisitos;
     }
 }
